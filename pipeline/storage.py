@@ -1,33 +1,46 @@
 """
-storage.py — Persists raw fetched papers as JSON files under data/papers/.
+storage.py — Persists papers + filter results as JSON under data/papers/.
 
-One file per date: data/papers/YYYY-MM-DD.json
-Format:
+Schema per file (data/papers/YYYY-MM-DD.json):
   {
-    "date": "2026-02-27",
+    "date":       "2026-02-27",
     "fetched_at": "2026-02-27T07:00:12+09:00",
     "papers": [
       {
-        "id": "2502.12345",
-        "title": "...",
-        "abstract": "...",
-        "authors": ["A", "B"],
-        "url": "https://arxiv.org/abs/2502.12345",
-        "published": "2026-02-27T00:00:00+00:00",
-        "categories": ["cs.AI", "cs.LG"]
+        "id":             "2502.12345",
+        "title":          "...",
+        "abstract":       "...",
+        "authors":        ["A", "B"],
+        "url":            "https://arxiv.org/abs/2502.12345",
+        "published":      "2026-02-27T00:00:00+00:00",
+        "categories":     ["cs.AI"],
+        "matched_topics": ["Symbolic AI"],   -- [] if unmatched
+        "best_score":     0.72               -- 0.0 if keyword-only match
       },
       ...
     ]
   }
 
-Retention: files older than RETENTION_DAYS are deleted on each run.
+data/available_dates.json:
+  {
+    "updated_at": "2026-02-27T07:00:00+09:00",
+    "latest":     "2026-02-27",
+    "dates": {
+      "2026": {
+        "02": ["27", "26", "25"],
+        "01": ["15"]
+      }
+    }
+  }
 """
 
 import json
 from datetime import date, datetime, timezone, timedelta
 from pathlib import Path
+from collections import defaultdict
 
 from fetcher import Paper
+from filter  import MatchResult
 
 RETENTION_DAYS = 90
 KST = timezone(timedelta(hours=9))
@@ -43,17 +56,19 @@ def _path_for_date(root: Path, d: date) -> Path:
     return _papers_dir(root) / f"{d.isoformat()}.json"
 
 
-# ── Serialise / deserialise ───────────────────────────────────────────────────
+# ── Serialise ─────────────────────────────────────────────────────────────────
 
-def _paper_to_dict(p: Paper) -> dict:
+def _paper_to_dict(p: Paper, match: MatchResult | None) -> dict:
     return {
-        "id":         p.id,
-        "title":      p.title,
-        "abstract":   p.abstract,
-        "authors":    p.authors,
-        "url":        p.url,
-        "published":  p.published.isoformat(),
-        "categories": p.categories,
+        "id":             p.id,
+        "title":          p.title,
+        "abstract":       p.abstract,
+        "authors":        p.authors,
+        "url":            p.url,
+        "published":      p.published.isoformat(),
+        "categories":     p.categories,
+        "matched_topics": match.matched_topics if match else [],
+        "best_score":     round(match.best_semantic_score, 3) if match else 0.0,
     }
 
 
@@ -69,24 +84,37 @@ def _dict_to_paper(d: dict) -> Paper:
     )
 
 
-# ── Public API ────────────────────────────────────────────────────────────────
+# ── Public: save / load ───────────────────────────────────────────────────────
 
-def save_papers(root: Path, d: date, papers: list[Paper]) -> None:
-    """Write papers for a given date to disk. Overwrites if already exists."""
+def save_papers(
+    root: Path,
+    d: date,
+    matched: list[MatchResult],
+    unmatched: list[MatchResult],
+) -> None:
+    """
+    Save matched + unmatched MatchResults for a given date.
+    matched_topics and best_score are embedded directly in each paper record.
+    """
     path = _path_for_date(root, d)
+
+    # All papers: matched first, then unmatched — each carries its own MatchResult
+    all_results = matched + unmatched
+    papers_json = [_paper_to_dict(r.paper, r) for r in all_results]
+
     payload = {
         "date":       d.isoformat(),
         "fetched_at": datetime.now(KST).isoformat(),
-        "papers":     [_paper_to_dict(p) for p in papers],
+        "papers":     papers_json,
     }
     path.write_text(json.dumps(payload, ensure_ascii=False, indent=2), encoding="utf-8")
-    print(f"[storage] Saved {len(papers)} papers → {path.name}")
+    print(f"[storage] Saved {len(matched)} matched + {len(unmatched)} unmatched → {path.name}")
 
 
 def load_papers(root: Path, d: date) -> list[Paper] | None:
     """
-    Load papers for a given date from disk.
-    Returns None if the file doesn't exist (date not yet fetched).
+    Load raw Paper objects for a given date (for re-filtering if needed).
+    Returns None if file doesn't exist.
     """
     path = _path_for_date(root, d)
     if not path.exists():
@@ -103,9 +131,8 @@ def date_has_data(root: Path, d: date) -> bool:
 
 def list_available_dates(root: Path) -> list[date]:
     """Return all dates that have saved JSON files, sorted newest-first."""
-    d = _papers_dir(root)
     dates = []
-    for f in d.glob("????-??-??.json"):
+    for f in _papers_dir(root).glob("????-??-??.json"):
         try:
             dates.append(date.fromisoformat(f.stem))
         except ValueError:
@@ -113,8 +140,45 @@ def list_available_dates(root: Path) -> list[date]:
     return sorted(dates, reverse=True)
 
 
+# ── available_dates.json ──────────────────────────────────────────────────────
+
+def update_available_dates(root: Path) -> None:
+    """
+    Rebuild data/available_dates.json from all existing paper JSON files.
+    Hierarchical format: { year: { month: [day, ...] } }
+    """
+    dates = list_available_dates(root)
+    if not dates:
+        return
+
+    hierarchy: dict[str, dict[str, list[str]]] = defaultdict(lambda: defaultdict(list))
+    for d in dates:
+        y = str(d.year)
+        m = str(d.month).zfill(2)
+        day = str(d.day).zfill(2)
+        hierarchy[y][m].append(day)
+
+    # Convert defaultdicts to plain dicts, days sorted descending
+    plain = {
+        y: {m: sorted(days, reverse=True) for m, days in months.items()}
+        for y, months in sorted(hierarchy.items(), reverse=True)
+    }
+
+    payload = {
+        "updated_at": datetime.now(KST).isoformat(),
+        "latest":     dates[0].isoformat(),
+        "dates":      plain,
+    }
+
+    out = root / "data" / "available_dates.json"
+    out.write_text(json.dumps(payload, ensure_ascii=False, indent=2), encoding="utf-8")
+    print(f"[storage] Updated available_dates.json ({len(dates)} dates, latest: {dates[0]})")
+
+
+# ── Prune ─────────────────────────────────────────────────────────────────────
+
 def prune_old_files(root: Path, retention_days: int = RETENTION_DAYS) -> None:
-    """Delete JSON files older than retention_days."""
+    """Delete paper JSON files older than retention_days."""
     cutoff = datetime.now(KST).date() - timedelta(days=retention_days)
     pruned = 0
     for f in _papers_dir(root).glob("????-??-??.json"):
@@ -125,8 +189,8 @@ def prune_old_files(root: Path, retention_days: int = RETENTION_DAYS) -> None:
         if file_date < cutoff:
             f.unlink()
             pruned += 1
-            print(f"[storage] Pruned {f.name} (older than {retention_days} days)")
-    if pruned == 0:
-        print(f"[storage] No files to prune (retention: {retention_days} days).")
-    else:
+            print(f"[storage] Pruned {f.name}")
+    if pruned:
         print(f"[storage] Pruned {pruned} file(s).")
+    else:
+        print(f"[storage] Nothing to prune (retention: {retention_days} days).")

@@ -67,119 +67,23 @@ def _fetch_chunk(category_query: str, start: int) -> list[Paper]:
     return papers
 
 
-def fetch_recent_days(
-    categories: list[str] = ["cs.AI"],
-    max_results: int = 2000,
-    max_days: int = 7,
-) -> dict[date, list[Paper]]:
-    """
-    Fetch up to max_days of the most recent papers from arXiv, grouped by
-    their KST calendar date.
-
-    This walks the arXiv feed in reverse-chronological order and associates
-    each paper with its KST date. Once we've fully passed beyond the oldest
-    date we care about (the max_days‑th distinct date we encounter), we stop.
-    """
-    if max_days <= 0:
-        return {}
-
-    cat_query = " OR ".join(f"cat:{c}" for c in categories)
-    per_day: dict[date, list[Paper]] = {}
-    dates_in_order: list[date] = []
-    seen_ids: set[str] = set()
-    target_last_date: date | None = None
-
-    start = 0
-    print(
-        f"[fetcher] Fetching up to {max_days} recent day(s) of papers "
-        f"from {categories}…"
-    )
-
-    while start < max_results:
-        print(f"[fetcher] Requesting papers {start+1}–{start+CHUNK_SIZE}…")
-        chunk = _fetch_chunk(cat_query, start)
-
-        if not chunk:
-            print("[fetcher] Empty response — stopping.")
-            break
-
-        hit_past = False
-        for p in chunk:
-            paper_date_kst = p.published.astimezone(KST).date()
-
-            # Once we've identified the oldest date we care about, as soon as we
-            # see a paper from an earlier day we can stop — results are sorted
-            # newest‑first, so everything after will be even older.
-            if target_last_date is not None and paper_date_kst < target_last_date:
-                hit_past = True
-                break
-
-            if p.id in seen_ids:
-                continue
-            seen_ids.add(p.id)
-
-            if paper_date_kst not in per_day:
-                per_day[paper_date_kst] = []
-                dates_in_order.append(paper_date_kst)
-
-                if len(dates_in_order) == max_days:
-                    target_last_date = paper_date_kst
-
-            per_day[paper_date_kst].append(p)
-
-        if hit_past:
-            print(
-                f"[fetcher] Reached earlier than {target_last_date} — "
-                "stopping."
-            )
-            break
-
-        if len(chunk) < CHUNK_SIZE:
-            print("[fetcher] Partial page — end of results.")
-            break
-
-        start += CHUNK_SIZE
-        print(f"[fetcher] Waiting {REQUEST_DELAY}s…")
-        time.sleep(REQUEST_DELAY)
-
-    print(
-        "[fetcher] Done. Got "
-        + ", ".join(
-            f"{len(per_day[d])} for {d.isoformat()}" for d in sorted(per_day.keys(), reverse=True)
-        )
-        or "[fetcher] Done. No papers fetched."
-    )
-    return per_day
-
-
 def fetch_today(
     categories: list[str] = ["cs.AI"],
     max_results: int = 2000,
 ) -> tuple[date, list[Paper]]:
     """
-    Fetch the most recent "day" of papers from arXiv, using KST for day
-    boundaries but deriving the actual digest date from the newest papers
-    returned by the API.
+    Fetch today's papers from arXiv (today = current date in KST).
+    Stops as soon as a paper from a previous date is encountered.
 
-    Concretely:
-      - We look at the newest paper's published timestamp (converted to KST)
-      - That paper's KST date becomes the "digest day"
-      - We keep consuming papers while their KST date == digest day
-      - As soon as we hit an older date, we stop (results are sorted newest-first)
-
-    This avoids issues where the local calendar day (in KST) has advanced
-    but arXiv's "published" dates have not yet rolled over, which would
-    otherwise yield zero papers for "today".
-
-    Returns (digest_date_kst, papers).
+    Returns (today_kst, papers).
     """
-    cat_query        = " OR ".join(f"cat:{c}" for c in categories)
-    all_papers: list[Paper] = []
-    seen_ids:   set[str]    = set()
-    digest_date: date | None = None
+    today_kst    = datetime.now(KST).date()
+    cat_query    = " OR ".join(f"cat:{c}" for c in categories)
+    all_papers:  list[Paper] = []
+    seen_ids:    set[str]    = set()
     start = 0
 
-    print(f"[fetcher] Fetching most recent papers from {categories}…")
+    print(f"[fetcher] Fetching today's papers ({today_kst} KST) from {categories}…")
 
     while start < max_results:
         print(f"[fetcher] Requesting papers {start+1}–{start+CHUNK_SIZE}…")
@@ -189,24 +93,16 @@ def fetch_today(
             print("[fetcher] Empty response — stopping.")
             break
 
-        new_today: list[Paper] = []
-        hit_old = False
+        new_today = []
+        hit_old   = False
         for p in chunk:
-            paper_date_kst = p.published.astimezone(KST).date()
-
-            # Establish digest_date from the first (newest) paper we see.
-            if digest_date is None:
-                digest_date = paper_date_kst
-
-            if paper_date_kst == digest_date:
+            if p.published.astimezone(KST).date() >= today_kst:
                 if p.id not in seen_ids:
                     seen_ids.add(p.id)
                     new_today.append(p)
             else:
-                # We've crossed into an older day; since results are sorted
-                # newest-first, everything after this is older too.
                 hit_old = True
-                break
+                break  # sorted newest-first; everything after is older
 
         all_papers.extend(new_today)
         print(f"[fetcher] +{len(new_today)} (total today: {len(all_papers)})")
@@ -222,9 +118,66 @@ def fetch_today(
         print(f"[fetcher] Waiting {REQUEST_DELAY}s…")
         time.sleep(REQUEST_DELAY)
 
-    # Fallback: if for some reason we saw no papers at all, use "today" in KST
-    # as the digest date so the rest of the pipeline still has a sensible key.
-    digest_date_final = digest_date or datetime.now(KST).date()
+    print(f"[fetcher] Done. {len(all_papers)} papers for {today_kst}.")
+    return today_kst, all_papers
 
-    print(f"[fetcher] Done. {len(all_papers)} papers for {digest_date_final}.")
-    return digest_date_final, all_papers
+
+def fetch_recent_days(
+    categories: list[str] = ["cs.AI"],
+    max_results: int = 2000,
+    num_days: int = 7,
+) -> dict[date, list[Paper]]:
+    """
+    Fetch papers for the past num_days in a single paginated pass.
+    Stops as soon as all papers in a chunk are older than the window.
+
+    Returns dict: date → [Paper, ...], sorted newest-first.
+    Much more efficient than calling fetch_date() per day separately.
+    """
+    from collections import defaultdict
+
+    today_kst = datetime.now(KST).date()
+    cutoff    = today_kst - timedelta(days=num_days - 1)
+    cat_query = " OR ".join(f"cat:{c}" for c in categories)
+    grouped:  dict[date, list[Paper]] = defaultdict(list)
+    seen_ids: set[str] = set()
+    start = 0
+
+    print(f"[fetcher] Fetching {num_days} days ({cutoff} → {today_kst} KST)…")
+
+    while start < max_results:
+        print(f"[fetcher] Requesting papers {start+1}–{start+CHUNK_SIZE}…")
+        chunk = _fetch_chunk(cat_query, start)
+
+        if not chunk:
+            print("[fetcher] Empty response — stopping.")
+            break
+
+        all_too_old = True
+        for p in chunk:
+            paper_date = p.published.astimezone(KST).date()
+            if paper_date >= cutoff:
+                all_too_old = False
+                if p.id not in seen_ids:
+                    seen_ids.add(p.id)
+                    grouped[paper_date].append(p)
+
+        total = sum(len(v) for v in grouped.values())
+        print(f"[fetcher] {total} papers in window so far across {len(grouped)} days.")
+
+        if all_too_old:
+            print("[fetcher] All papers older than window — stopping.")
+            break
+        if len(chunk) < CHUNK_SIZE:
+            print("[fetcher] Partial page — end of results.")
+            break
+
+        start += CHUNK_SIZE
+        print(f"[fetcher] Waiting {REQUEST_DELAY}s…")
+        time.sleep(REQUEST_DELAY)
+
+    result = dict(sorted(grouped.items(), reverse=True))
+    for d, papers in result.items():
+        print(f"[fetcher]   {d}: {len(papers)} papers")
+    print(f"[fetcher] Done. {sum(len(v) for v in result.values())} total papers.")
+    return result
