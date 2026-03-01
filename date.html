@@ -3,389 +3,128 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>arXiv Digest · Browse</title>
-  <style>
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-    body {
-      background: #f8fafc; color: #1e293b;
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-      font-size: 15px; line-height: 1.65; min-height: 100vh;
-    }
-
-    /* ── Header ── */
-    .sticky-top {
-      position: sticky; top: 0; z-index: 100;
-      background: #f8fafc; border-bottom: 1px solid #e2e8f0;
-      padding: 14px 24px 14px;
-      box-shadow: 0 2px 12px rgba(0,0,0,0.05);
-    }
-    .header-inner { max-width: 800px; margin: 0 auto; display: flex; align-items: center; gap: 12px; }
-    .back-btn {
-      background: none; border: none; cursor: pointer;
-      color: #94a3b8; font-size: 18px; padding: 4px; border-radius: 6px;
-      text-decoration: none; line-height: 1;
-    }
-    .back-btn:hover { color: #475569; background: #f1f5f9; }
-    .header-label {
-      font-size: 10px; font-weight: 700; letter-spacing: 0.18em;
-      text-transform: uppercase; color: #94a3b8;
-    }
-    .header-title {
-      font-size: 20px; font-weight: 700; color: #0f172a; letter-spacing: -0.4px;
-    }
-    .header-meta { font-size: 13px; color: #94a3b8; margin-left: auto; }
-
-    /* ── Filter chips ── */
-    .filter-bar {
-      display: flex; flex-wrap: wrap; gap: 8px; padding: 12px 24px;
-      max-width: 800px; margin: 0 auto;
-    }
-    .chip {
-      cursor: pointer; padding: 6px 16px; border-radius: 999px;
-      font-size: 12px; font-weight: 600; border: 1.5px solid;
-      transition: all 0.15s; user-select: none;
-    }
-    .chip:hover { filter: brightness(0.95); }
-
-    /* ── Content ── */
-    .content { max-width: 800px; margin: 0 auto; padding: 20px 24px 80px; }
-
-    /* ── Section divider ── */
-    .section-divider {
-      display: flex; align-items: center; gap: 12px; margin: 36px 0 18px;
-    }
-    .section-divider-line { flex: 1; height: 1px; background: #e2e8f0; }
-    .section-divider-label {
-      font-size: 11px; font-weight: 700; letter-spacing: 0.14em;
-      text-transform: uppercase; color: #cbd5e1; white-space: nowrap;
-    }
-
-    /* ── Paper card ── */
-    .paper {
-      border: 1px solid #e2e8f0; border-left: 4px solid #cbd5e1;
-      border-radius: 10px; padding: 22px 24px; margin-bottom: 14px;
-      background: #fff; box-shadow: 0 1px 4px rgba(0,0,0,0.04);
-      transition: box-shadow 0.15s;
-    }
-    .paper:hover { box-shadow: 0 4px 16px rgba(0,0,0,0.08); }
-    .paper.irrelevant { background: #fafafa; opacity: 0.75; }
-    .paper.irrelevant:hover { opacity: 1; }
-    .paper-title {
-      font-size: 17px; font-weight: 700; color: #0f172a;
-      text-decoration: none; line-height: 1.4; display: block; margin-bottom: 6px;
-    }
-    .paper-title:hover { color: #3b82f6; }
-    .paper-authors { font-size: 13px; color: #94a3b8; margin-bottom: 12px; }
-    .abstract-preview, .abstract-full { font-size: 15px; color: #475569; line-height: 1.7; }
-    .abstract-full { display: none; }
-    .expand-btn {
-      background: none; border: none; cursor: pointer;
-      font-size: 12px; font-weight: 600; color: #3b82f6;
-      padding: 0; margin-top: 8px; display: block;
-    }
-    .expand-btn:hover { color: #1d4ed8; }
-    .paper-footer { display: flex; align-items: center; gap: 6px; margin-top: 16px; flex-wrap: wrap; }
-    .topic-chip { font-size: 11px; font-weight: 600; padding: 3px 10px; border-radius: 999px; border: 1.5px solid; }
-    .score-badge { font-size: 11px; color: #cbd5e1; margin-left: 4px; }
-    .pdf-link { margin-left: auto; font-size: 12px; font-weight: 600; color: #64748b; text-decoration: none; }
-    .pdf-link:hover { color: #3b82f6; }
-
-    /* ── Pagination ── */
-    .pagination { display: flex; align-items: center; justify-content: center; gap: 6px; margin-top: 28px; }
-    .page-btn {
-      background: #fff; border: 1px solid #e2e8f0; color: #64748b;
-      border-radius: 8px; padding: 7px 14px; font-size: 13px;
-      font-weight: 500; cursor: pointer; transition: all 0.15s;
-    }
-    .page-btn:hover { border-color: #93c5fd; color: #1d4ed8; background: #eff6ff; }
-    .page-btn.active { border-color: #3b82f6; background: #3b82f6; color: #fff; font-weight: 700; }
-    .page-btn:disabled { opacity: 0.35; cursor: default; }
-    .page-info { font-size: 13px; color: #cbd5e1; padding: 0 4px; }
-
-    /* ── State messages ── */
-    .state {
-      text-align: center; padding: 80px 24px;
-      color: #94a3b8; font-size: 15px;
-    }
-    .state h2 { font-size: 18px; font-weight: 700; color: #0f172a; margin-bottom: 8px; }
-    .state p { margin-bottom: 20px; }
-    .state a { color: #3b82f6; text-decoration: none; font-weight: 600; }
-  </style>
+  <title>arXiv Digest · Archive</title>
+  <link rel="stylesheet" href="static/global.css">
 </head>
 <body>
+
+<!-- Sidebar -->
+<div class="sidebar-overlay" id="overlay" onclick="DigestDisplay.closeSidebar()"></div>
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-header">
+    <span class="sidebar-title">📅 Browse by Date</span>
+    <button class="sidebar-close" onclick="DigestDisplay.closeSidebar()">✕</button>
+  </div>
+  <div class="sidebar-body" id="calendar-body"></div>
+</div>
 
 <!-- Header -->
 <div class="sticky-top">
   <div class="header-inner">
-    <a class="back-btn" href="index.html" title="Back to digest">←</a>
-    <div>
-      <div class="header-label">arXiv Digest · Archive</div>
-      <div class="header-title" id="header-title">Loading…</div>
+    <div class="header-row" style="padding-bottom: 14px;">
+      <a class="back-btn" href="index.html" title="Back to digest">←</a>
+      <button class="hamburger" onclick="DigestDisplay.openSidebar()" title="Browse history">📅</button>
+      <div>
+        <div class="header-label">arXiv Digest · Archive</div>
+        <div class="header-title" id="header-title">Loading…</div>
+      </div>
+      <span class="header-meta" id="meta-count"></span>
     </div>
-    <span class="header-meta" id="meta-count"></span>
   </div>
 </div>
 
 <div class="filter-bar" id="filter-bar"></div>
 
-<div class="content" id="main-content">
-  <div class="state" id="state-msg">
-    <p>Loading papers…</p>
+<div class="content">
+  <div id="matched-list"></div>
+  <div class="pagination" id="matched-pagination"></div>
+  <div class="section-divider">
+    <div class="section-divider-line"></div>
+    <div class="section-divider-label">Filtered out · sorted by relevance</div>
+    <div class="section-divider-line"></div>
   </div>
+  <div id="unmatched-list"></div>
+  <div class="pagination" id="unmatched-pagination"></div>
 </div>
 
+<script src="static/display.js"></script>
 <script>
-// ── Topic config embedded at build time ───────────────────────────────────────
-// TOPICS_PLACEHOLDER — replaced by renderer during build
-const TOPICS_CONFIG = [{"name": "Artificial Consciousness", "enabled": true, "terms": ["artificial consciousness", "machine consciousness", "conscious AI", "sentience", "phenomenal experience", "qualia", "self-awareness", "subjective experience", "integrated information theory", "IIT", "global workspace theory", "GWT", "higher-order theory", "cognitive architecture", "inner experience", "awareness"]}, {"name": "Test-Time Learning", "enabled": true, "terms": ["test-time learning", "test-time training", "TTL", "TTT", "test-time compute", "inference-time compute", "inference-time scaling", "test-time adaptation", "chain of thought", "CoT", "self-consistency", "tree of thought", "ToT", "best-of-N", "majority voting", "slow thinking", "extended thinking", "reasoning model", "Monte Carlo tree search", "MCTS", "search at inference"]}, {"name": "Symbolic AI", "enabled": true, "terms": ["symbolic", "neurosymbolic", "neuro-symbolic", "symbolic reasoning", "knowledge graph", "formal verification", "theorem proving", "automated reasoning", "first-order logic", "FOL", "constraint satisfaction", "program synthesis", "rule-based", "knowledge representation", "ontology", "inductive logic programming", "ILP", "symbolic regression", "hybrid reasoning"]}];
-
-const PAGE_SIZE = 5;
-const CHIP_PALETTES = [
-  ["#dbeafe","#1d4ed8","#93c5fd","#3b82f6"],
-  ["#dcfce7","#15803d","#86efac","#22c55e"],
-  ["#fef3c7","#b45309","#fcd34d","#f59e0b"],
-  ["#fce7f3","#be185d","#f9a8d4","#ec4899"],
-  ["#ede9fe","#6d28d9","#c4b5fd","#8b5cf6"],
-  ["#ccfbf1","#0f766e","#5eead4","#14b8a6"],
-];
-const IRREL = {background:"#f1f5f9", color:"#94a3b8", borderColor:"#e2e8f0"};
-
-let allPapers   = [];
-let matched     = [];
-let unmatched   = [];
-let allTopics   = [];
 let activeTopics = new Set();
-let activeStyles = {}, inactiveStyles = {}, accentColors = {};
-let matchedPage = 1, unmatchedPage = 1;
+let pages        = { matched: 1, unmatched: 1 };
+let allPapers    = [];
 
-// ── Boot ──────────────────────────────────────────────────────────────────────
 async function boot() {
-  const dateStr = window.location.hash.replace('#', '');
+  const dateStr = window.location.hash.replace("#", "");
+
   if (!dateStr || !/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) {
-    showError('No date specified.', 'Please click a date from the calendar on the <a href="index.html">digest page</a>.');
+    DigestDisplay.showError("matched-list", "No date specified.",
+      'Click a date from the calendar on the <a href="index.html">digest page</a>.');
+    document.getElementById("header-title").textContent = "Archive";
     return;
   }
 
-  // Format date nicely for header
-  const d = new Date(dateStr + 'T00:00:00');
-  document.getElementById('header-title').textContent =
-    d.toLocaleDateString('en-US', { year:'numeric', month:'long', day:'numeric' });
-  document.title = `arXiv Digest · ${dateStr}`;
+  const d = new Date(dateStr + "T00:00:00");
+  document.getElementById("header-title").textContent =
+    d.toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" });
+  document.title = "arXiv Digest · " + dateStr;
 
-  // Fetch the JSON for this date
-  const url = `data/papers/${dateStr}.json`;
+  DigestDisplay.showLoading("matched-list");
+
   let payload;
   try {
-    const res = await fetch(url);
-    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const res = await fetch("data/papers/" + dateStr + ".json");
+    if (!res.ok) throw new Error("HTTP " + res.status);
     payload = await res.json();
   } catch (e) {
-    showError(`No data for ${dateStr}.`,
-      'This date may be outside the 3-month archive window, or the digest hasn\'t run yet. <a href="index.html">← Back to digest</a>');
+    DigestDisplay.showError("matched-list", "No data for " + dateStr + ".",
+      "This date may be outside the 3-month archive, or the digest hasn't run yet. <a href=\"index.html\">← Back</a>");
     return;
   }
 
   allPapers = payload.papers;
-  document.getElementById('state-msg').style.display = 'none';
 
-  // Build topic metadata from TOPICS_CONFIG
-  allTopics = TOPICS_CONFIG.map(t => t.name);
-  allTopics.forEach((t, i) => {
-    const pal = CHIP_PALETTES[i % CHIP_PALETTES.length];
-    activeStyles[t]   = {background: pal[0], color: pal[1], borderColor: pal[2]};
-    inactiveStyles[t] = {background: '#f1f5f9', color: '#94a3b8', borderColor: '#e2e8f0'};
-    accentColors[t]   = pal[3];
+  const topicSet = new Set();
+  allPapers.forEach(p => (p.matched_topics || []).forEach(t => topicSet.add(t)));
+  DigestDisplay.buildTopicStyles([...topicSet]);
+  activeTopics = new Set([...topicSet]);
+
+  DigestDisplay.buildFilterChips("filter-bar", activeTopics, () => {
+    pages.matched = 1; render();
   });
-  activeTopics = new Set(allTopics);
 
-  // Run keyword filter client-side
-  filterPapers();
-  buildChips();
-  renderAll();
-}
-
-// ── Keyword filter (client-side, no embeddings) ───────────────────────────────
-function escapeRegex(s) { return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); }
-
-function filterPapers() {
-  matched   = [];
-  unmatched = [];
-
-  allPapers.forEach(p => {
-    const haystack = (p.title + ' ' + p.abstract).toLowerCase();
-    const matchedTopics = [];
-
-    TOPICS_CONFIG.forEach(topic => {
-      if (!topic.enabled) return;
-      const hit = topic.terms.some(term => {
-        const pat = new RegExp('\\b' + escapeRegex(term.toLowerCase()) + '(?:ing|ed|s|er|ly|tion|ations?)?\\b', 'i');
-        return pat.test(haystack);
-      });
-      if (hit) matchedTopics.push(topic.name);
-    });
-
-    if (matchedTopics.length) {
-      matched.push({ ...p, topics: matchedTopics, score: 0 });
-    } else {
-      unmatched.push({ ...p, topics: [], score: 0 });
+  // Build calendar from available_dates.json
+  try {
+    const res = await fetch("data/available_dates.json");
+    if (res.ok) {
+      const idx = await res.json();
+      DigestDisplay.buildCalendar(idx.dates, idx.latest,
+        ds => { window.location.href = "date.html#" + ds; });
     }
+  } catch (_) { /* calendar optional */ }
+
+  render();
+}
+
+function render() {
+  const matched   = allPapers.filter(p => p.matched_topics && p.matched_topics.length > 0);
+  const unmatched = allPapers.filter(p => !p.matched_topics || p.matched_topics.length === 0);
+  const filtered  = matched.filter(p =>
+    (p.matched_topics || []).some(t => activeTopics.has(t))
+  );
+
+  document.getElementById("meta-count").textContent =
+    filtered.length + " matched · " + unmatched.length + " unmatched";
+
+  DigestDisplay.renderLists({
+    matchedListId:   "matched-list",
+    unmatchedListId: "unmatched-list",
+    matchedPagId:    "matched-pagination",
+    unmatchedPagId:  "unmatched-pagination",
+    matchedPapers:   filtered,
+    unmatchedPapers: unmatched,
+    pages,
+    onPage: (which, pg) => { pages[which] = pg; render(); scrollTo(0, 0); },
   });
-
-  // unmatched sorted by position in original list (already date-sorted from storage)
-  document.getElementById('meta-count').textContent =
-    matched.length + ' matched · ' + unmatched.length + ' unmatched';
-}
-
-// ── Filter chips ──────────────────────────────────────────────────────────────
-function buildChips() {
-  const bar = document.getElementById('filter-bar');
-  bar.innerHTML = '';
-  allTopics.forEach(t => {
-    const btn = document.createElement('button');
-    btn.className = 'chip'; btn.textContent = t;
-    applyChipStyle(btn, t, true);
-    btn.addEventListener('click', () => {
-      activeTopics.has(t) ? activeTopics.delete(t) : activeTopics.add(t);
-      applyChipStyle(btn, t, activeTopics.has(t));
-      matchedPage = 1; renderAll();
-    });
-    bar.appendChild(btn);
-  });
-}
-
-function applyChipStyle(el, t, on) {
-  const s = on ? activeStyles[t] : inactiveStyles[t];
-  if (!s) return;
-  el.style.background = s.background; el.style.color = s.color;
-  el.style.borderColor = s.borderColor;
-}
-
-// ── Card ──────────────────────────────────────────────────────────────────────
-function buildCard(p, irrel) {
-  const preview = p.abstract.slice(0, 320) + (p.abstract.length > 320 ? '…' : '');
-  const hasMore = p.abstract.length > 320;
-  const accent  = irrel ? '#e2e8f0' : (accentColors[p.topics[0]] || '#cbd5e1');
-  const chips   = irrel
-    ? `<span class="topic-chip" style="background:${IRREL.background};color:${IRREL.color};border-color:${IRREL.borderColor}">irrelevant</span>`
-    : p.topics.map(t => {
-        const s = activeStyles[t] || {};
-        return `<span class="topic-chip" style="background:${s.background};color:${s.color};border-color:${s.borderColor}">${t}</span>`;
-      }).join('');
-
-  const card = document.createElement('div');
-  card.className = 'paper' + (irrel ? ' irrelevant' : '');
-  card.style.borderLeftColor = accent;
-  card.innerHTML = `
-    <a class="paper-title" href="https://arxiv.org/pdf/${p.id}" target="_blank">${p.title}</a>
-    <div class="paper-authors">${(p.authors || []).slice(0,3).join(', ')}${p.authors && p.authors.length > 3 ? ' et al.' : ''}</div>
-    <div class="abstract-preview" id="pv-${p.id}">${preview}</div>
-    ${hasMore ? `<div class="abstract-full" id="fl-${p.id}">${p.abstract}</div>
-      <button class="expand-btn" id="btn-${p.id}" onclick="toggle('${p.id}')">Show more ↓</button>` : ''}
-    <div class="paper-footer">${chips}<a class="pdf-link" href="https://arxiv.org/pdf/${p.id}" target="_blank">PDF →</a></div>
-  `;
-  return card;
-}
-
-// ── Render ────────────────────────────────────────────────────────────────────
-function renderAll() {
-  const content   = document.getElementById('main-content');
-  const filtered  = matched.filter(p => p.topics.some(t => activeTopics.has(t)));
-
-  document.getElementById('meta-count').textContent =
-    filtered.length + ' matched · ' + unmatched.length + ' unmatched';
-
-  // Clear and rebuild content
-  content.innerHTML = '';
-
-  // Matched list
-  const mList = document.createElement('div');
-  mList.id = 'matched-list';
-  if (!filtered.length) {
-    mList.innerHTML = '<div style="text-align:center;color:#94a3b8;padding:48px 0;font-size:14px">No papers match the selected topics.</div>';
-  } else {
-    filtered.slice((matchedPage-1)*PAGE_SIZE, matchedPage*PAGE_SIZE)
-      .forEach(p => mList.appendChild(buildCard(p, false)));
-  }
-  content.appendChild(mList);
-
-  const mPag = document.createElement('div');
-  mPag.className = 'pagination';
-  content.appendChild(mPag);
-  renderPagination(mPag, filtered.length, matchedPage, p => { matchedPage = p; renderAll(); scrollTo(0,0); });
-
-  // Divider
-  const div = document.createElement('div');
-  div.className = 'section-divider';
-  div.innerHTML = '<div class="section-divider-line"></div><div class="section-divider-label">Filtered out · sorted by relevance</div><div class="section-divider-line"></div>';
-  content.appendChild(div);
-
-  // Unmatched list
-  const uList = document.createElement('div');
-  uList.id = 'unmatched-list';
-  unmatched.slice((unmatchedPage-1)*PAGE_SIZE, unmatchedPage*PAGE_SIZE)
-    .forEach(p => uList.appendChild(buildCard(p, true)));
-  content.appendChild(uList);
-
-  const uPag = document.createElement('div');
-  uPag.className = 'pagination';
-  content.appendChild(uPag);
-  renderPagination(uPag, unmatched.length, unmatchedPage, p => { unmatchedPage = p; renderAll(); scrollTo(0,0); });
-}
-
-// ── Expand ────────────────────────────────────────────────────────────────────
-function toggle(id) {
-  const pv = document.getElementById('pv-' + id);
-  const fl = document.getElementById('fl-' + id);
-  const b  = document.getElementById('btn-' + id);
-  const ex = fl.style.display === 'block';
-  pv.style.display = ex ? 'block' : 'none';
-  fl.style.display = ex ? 'none'  : 'block';
-  b.textContent    = ex ? 'Show more ↓' : 'Show less ↑';
-}
-
-// ── Pagination ────────────────────────────────────────────────────────────────
-function renderPagination(container, total, current, onPage) {
-  const pages = Math.ceil(total / PAGE_SIZE);
-  container.innerHTML = '';
-  if (pages <= 1) return;
-
-  const prev = document.createElement('button');
-  prev.className = 'page-btn'; prev.textContent = '← Prev';
-  prev.disabled = current === 1;
-  prev.onclick = () => onPage(current - 1);
-  container.appendChild(prev);
-
-  const range = [];
-  for (let i = 1; i <= pages; i++) {
-    if (i===1 || i===pages || Math.abs(i-current)<=2) range.push(i);
-    else if (range[range.length-1] !== '…') range.push('…');
-  }
-  range.forEach(item => {
-    if (item === '…') {
-      const s = document.createElement('span');
-      s.className = 'page-info'; s.textContent = '…'; container.appendChild(s);
-    } else {
-      const b = document.createElement('button');
-      b.className = 'page-btn' + (item===current ? ' active' : '');
-      b.textContent = item;
-      b.onclick = () => onPage(item);
-      container.appendChild(b);
-    }
-  });
-
-  const next = document.createElement('button');
-  next.className = 'page-btn'; next.textContent = 'Next →';
-  next.disabled = current === pages;
-  next.onclick = () => onPage(current + 1);
-  container.appendChild(next);
-}
-
-// ── Error state ───────────────────────────────────────────────────────────────
-function showError(title, msg) {
-  document.getElementById('header-title').textContent = 'Not Found';
-  document.getElementById('state-msg').innerHTML =
-    `<h2>${title}</h2><p>${msg}</p>`;
-  document.getElementById('filter-bar').style.display = 'none';
 }
 
 boot();
