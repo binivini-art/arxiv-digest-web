@@ -1,9 +1,6 @@
 /**
  * display.js — Shared rendering logic for index.html and date.html.
  *
- * Expects on window:
- *   DigestDisplay.init(config) — called by each page after loading data
- *
  * Data contract (papers in JSON):
  *   { id, title, abstract, authors[], url, matched_topics[], best_score }
  */
@@ -26,7 +23,7 @@ const DigestDisplay = (() => {
     background: "#f1f5f9", color: "#94a3b8", borderColor: "#e2e8f0"
   };
 
-  // ── Topic style maps (built once per page load) ───────────────────────────
+  // ── Topic style maps ───────────────────────────────────────────────────────
   let activeStyles   = {};
   let inactiveStyles = {};
   let accentColors   = {};
@@ -56,13 +53,13 @@ const DigestDisplay = (() => {
   }
 
   // ── Calendar ───────────────────────────────────────────────────────────────
+  // Paginated single-month view with ‹ / › navigation.
   // availableDatesHierarchy: { "2026": { "02": ["27","26",...], "01": [...] }, ... }
   // todayStr: "2026-02-27"
-  // onDateClick: function(dateStr) — what to do when a date is clicked
+  // onDateClick: function(dateStr)
   function buildCalendar(availableDatesHierarchy, todayStr, onDateClick) {
     const body = document.getElementById("calendar-body");
     if (!body) return;
-    body.innerHTML = "";
 
     // Flatten to a Set for O(1) lookup
     const hasData = new Set();
@@ -72,26 +69,69 @@ const DigestDisplay = (() => {
       });
     });
 
+    // Build sorted month list (newest-first), filling any gaps in between
+    // so the user can navigate through months that have no data too.
+    const dataMonthKeys = [];
+    Object.entries(availableDatesHierarchy).forEach(([y, months]) => {
+      Object.keys(months).forEach(m => dataMonthKeys.push(`${y}-${String(m).padStart(2,"0")}`));
+    });
+    dataMonthKeys.sort().reverse();
+
+    const monthKeys = [];
+    if (dataMonthKeys.length > 0) {
+      // Walk from newest month down to oldest, filling gaps
+      let [cy, cm] = dataMonthKeys[0].split("-").map(Number);
+      const [oy, om] = dataMonthKeys[dataMonthKeys.length - 1].split("-").map(Number);
+      while (cy > oy || (cy === oy && cm >= om)) {
+        monthKeys.push(`${cy}-${String(cm).padStart(2,"0")}`);
+        cm--;
+        if (cm === 0) { cm = 12; cy--; }
+      }
+    }
+
+    let currentIdx = 0; // 0 = most recent month
+
     const DOWS = ["Su","Mo","Tu","We","Th","Fr","Sa"];
 
-    // Build months in reverse chronological order
-    const monthKeys = [];
-    Object.entries(availableDatesHierarchy).forEach(([y, months]) => {
-      Object.keys(months).forEach(m => monthKeys.push(`${y}-${m}`));
-    });
-    monthKeys.sort().reverse();
+    function renderMonth() {
+      body.innerHTML = "";
+      if (!monthKeys.length) return;
 
-    monthKeys.forEach(ym => {
-      const [y, m] = ym.split("-").map(Number);
-      const label = new Date(y, m-1, 1)
+      const ym          = monthKeys[currentIdx];
+      const [y, m]      = ym.split("-").map(Number);
+      const label       = new Date(y, m-1, 1)
         .toLocaleString("en-US", { month: "long", year: "numeric" });
-      const firstDow   = new Date(y, m-1, 1).getDay();
+      const firstDow    = new Date(y, m-1, 1).getDay();
       const daysInMonth = new Date(y, m, 0).getDate();
 
-      const block = document.createElement("div");
-      block.className = "cal-month";
-      block.innerHTML = `<div class="cal-month-label">${label}</div>`;
+      // ── Nav row: ‹ March 2026 › ──
+      const nav = document.createElement("div");
+      nav.className = "cal-nav";
 
+      const prevBtn = document.createElement("button");
+      prevBtn.className = "cal-nav-btn";
+      prevBtn.textContent = "‹";
+      prevBtn.title = "Previous month";
+      prevBtn.disabled = currentIdx >= monthKeys.length - 1;
+      prevBtn.onclick = () => { currentIdx++; renderMonth(); };
+
+      const monthLabel = document.createElement("span");
+      monthLabel.className = "cal-nav-label";
+      monthLabel.textContent = label;
+
+      const nextBtn = document.createElement("button");
+      nextBtn.className = "cal-nav-btn";
+      nextBtn.textContent = "›";
+      nextBtn.title = "Next month";
+      nextBtn.disabled = currentIdx === 0;
+      nextBtn.onclick = () => { currentIdx--; renderMonth(); };
+
+      nav.appendChild(prevBtn);
+      nav.appendChild(monthLabel);
+      nav.appendChild(nextBtn);
+      body.appendChild(nav);
+
+      // ── Day grid ──
       const grid = document.createElement("div");
       grid.className = "cal-grid";
 
@@ -103,7 +143,8 @@ const DigestDisplay = (() => {
 
       for (let i = 0; i < firstDow; i++) {
         const e = document.createElement("div");
-        e.className = "cal-day empty"; grid.appendChild(e);
+        e.className = "cal-day empty";
+        grid.appendChild(e);
       }
 
       for (let day = 1; day <= daysInMonth; day++) {
@@ -123,9 +164,10 @@ const DigestDisplay = (() => {
         grid.appendChild(cell);
       }
 
-      block.appendChild(grid);
-      body.appendChild(block);
-    });
+      body.appendChild(grid);
+    }
+
+    renderMonth();
   }
 
   // ── Filter chips ───────────────────────────────────────────────────────────
@@ -203,16 +245,9 @@ const DigestDisplay = (() => {
     btn.textContent   = expanded ? "Show more ↓" : "Show less ↑";
   }
 
-  // ── Render paper lists (matched + unmatched) ───────────────────────────────
-  // matchedListId, unmatchedListId: DOM ids for list containers
-  // matchedPagId, unmatchedPagId:   DOM ids for pagination containers
-  // matchedPapers: papers with matched_topics (already filtered by topic toggles)
-  // unmatchedPapers: papers with no matched_topics
-  // pages: { matched: int, unmatched: int }
-  // onPage: function(which, page) — "matched" | "unmatched"
+  // ── Render paper lists ─────────────────────────────────────────────────────
   function renderLists({ matchedListId, unmatchedListId, matchedPagId, unmatchedPagId,
                          matchedPapers, unmatchedPapers, pages, onPage }) {
-    // Matched
     const mList = document.getElementById(matchedListId);
     if (mList) {
       mList.innerHTML = "";
@@ -227,7 +262,6 @@ const DigestDisplay = (() => {
     renderPagination(matchedPagId, matchedPapers.length, pages.matched,
       pg => onPage("matched", pg));
 
-    // Unmatched
     const uList = document.getElementById(unmatchedListId);
     if (uList) {
       uList.innerHTML = "";
