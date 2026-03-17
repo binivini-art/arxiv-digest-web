@@ -3,6 +3,305 @@
   "fetched_at": "2026-03-17T11:24:48.426352+09:00",
   "papers": [
     {
+      "id": "2603.09288",
+      "title": "Proxy-Guided Measurement Calibration",
+      "abstract": "Aggregate outcome variables collected through surveys and administrative records are often subject to systematic measurement error. For instance, in disaster loss databases, county-level losses reported may differ from the true damages due to variations in on-the-ground data collection capacity, reporting practices, and event characteristics. Such miscalibration complicates downstream analysis and decision-making. We study the problem of outcome miscalibration and propose a framework guided by proxy variables for estimating and correcting the systematic errors. We model the data-generating process using a causal graph that separates latent content variables driving the true outcome from the latent bias variables that induce systematic errors. The key insight is that proxy variables that depend on the true outcome but are independent of the bias mechanism provide identifying information for quantifying the bias. Leveraging this structure, we introduce a two-stage approach that utilizes variational autoencoders to disentangle content and bias latents, enabling us to estimate the effect of bias on the outcome of interest. We analyze the assumptions underlying our approach and evaluate it on synthetic data, semi-synthetic datasets derived from randomized trials, and a real-world case study of disaster loss reporting.",
+      "authors": [
+        "Saketh Vishnubhatla",
+        "Shu Wan",
+        "Andre Harrison",
+        "Adrienne Raglin",
+        "Huan Liu"
+      ],
+      "url": "https://arxiv.org/abs/2603.09288",
+      "published": "2026-03-10T07:15:02+00:00",
+      "updated": "2026-03-15T07:30:45+00:00",
+      "categories": [
+        "cs.LG"
+      ],
+      "matched_topics": [
+        "Graph Neural Networks"
+      ],
+      "match_method": "keyword",
+      "best_score": 0.0,
+      "backfilled": true
+    },
+    {
+      "id": "2603.11501",
+      "title": "KEPo: Knowledge Evolution Poison on Graph-based Retrieval-Augmented Generation",
+      "abstract": "Graph-based Retrieval-Augmented Generation (GraphRAG) constructs the Knowledge Graph (KG) from external databases to enhance the timeliness and accuracy of Large Language Model (LLM) generations. However, this reliance on external data introduces new attack surfaces. Attackers can inject poisoned texts into databases to manipulate LLMs into producing harmful target responses for attacker-chosen queries. Existing research primarily focuses on attacking conventional RAG systems. However, such methods are ineffective against GraphRAG. This robustness derives from the KG abstraction of GraphRAG, which reorganizes injected text into a graph before retrieval, thereby enabling the LLM to reason based on the restructured context instead of raw poisoned passages. To expose latent security vulnerabilities in GraphRAG, we propose Knowledge Evolution Poison (KEPo), a novel poisoning attack method specifically designed for GraphRAG. For each target query, KEPo first generates a toxic event containing poisoned knowledge based on the target answer. By fabricating event backgrounds and forging knowledge evolution paths from original facts to the toxic event, it then poisons the KG and misleads the LLM into treating the poisoned knowledge as the final result. In multi-target attack scenarios, KEPo further connects multiple attack corpora, enabling their poisoned knowledge to mutually reinforce while expanding the scale of poisoned communities, thereby amplifying attack effectiveness. Experimental results across multiple datasets demonstrate that KEPo achieves state-of-the-art attack success rates for both single-target and multi-target attacks, significantly outperforming previous methods.",
+      "authors": [
+        "Qizhi Chen",
+        "Chao Qi",
+        "Yihong Huang",
+        "Muquan Li",
+        "Rongzheng Wang",
+        "Dongyang Zhang",
+        "Ke Qin",
+        "Shuang Liang"
+      ],
+      "url": "https://arxiv.org/abs/2603.11501",
+      "published": "2026-03-12T03:40:30+00:00",
+      "updated": "2026-03-15T02:27:17+00:00",
+      "categories": [
+        "cs.LG",
+        "cs.AI",
+        "cs.CR"
+      ],
+      "matched_topics": [
+        "Graph Neural Networks"
+      ],
+      "match_method": "keyword",
+      "best_score": 0.0,
+      "backfilled": true
+    },
+    {
+      "id": "2603.12244",
+      "title": "Separable neural architectures as a primitive for unified predictive and generative intelligence",
+      "abstract": "Intelligent systems across physics, language and perception often exhibit factorisable structure, yet are typically modelled by monolithic neural architectures that do not explicitly exploit this structure. The separable neural architecture (SNA) addresses this by formalising a representational class that unifies additive, quadratic and tensor-decomposed neural models. By constraining interaction order and tensor rank, SNAs impose a structural inductive bias that factorises high-dimensional mappings into low-arity components. Separability need not be a property of the system itself: it often emerges in the coordinates or representations through which the system is expressed. Crucially, this coordinate-aware formulation reveals a structural analogy between chaotic spatiotemporal dynamics and linguistic autoregression. By treating continuous physical states as smooth, separable embeddings, SNAs enable distributional modelling of chaotic systems. This approach mitigates the nonphysical drift characteristics of deterministic operators whilst remaining applicable to discrete sequences. The compositional versatility of this approach is demonstrated across four domains: autonomous waypoint navigation via reinforcement learning, inverse generation of multifunctional microstructures, distributional modelling of turbulent flow and neural language modelling. These results establish the separable neural architecture as a domain-agnostic primitive for predictive and generative intelligence, capable of unifying both deterministic and distributional representations.",
+      "authors": [
+        "Reza T. Batley",
+        "Apurba Sarker",
+        "Rajib Mostakim",
+        "Andrew Klichine",
+        "Sourav Saha"
+      ],
+      "url": "https://arxiv.org/abs/2603.12244",
+      "published": "2026-03-12T17:56:54+00:00",
+      "updated": "2026-03-15T18:39:13+00:00",
+      "categories": [
+        "cs.LG",
+        "cs.AI"
+      ],
+      "matched_topics": [
+        "Interpretability"
+      ],
+      "match_method": "keyword",
+      "best_score": 0.0,
+      "backfilled": true
+    },
+    {
+      "id": "2603.12165",
+      "title": "QAQ: Bidirectional Semantic Coherence for Selecting High-Quality Synthetic Code Instructions",
+      "abstract": "Synthetic data has become essential for training code generation models, yet it introduces significant noise and hallucinations that are difficult to detect with current metrics. Existing data selection methods like Instruction-Following Difficulty (IFD) typically assess how hard a model generates an answer given a query ($A|Q$). However, this metric is ambiguous on noisy synthetic data, where low probability can distinguish between intrinsic task complexity and model-generated hallucinations. Here, we propose QAQ, a novel data selection framework that evaluates data quality from the reverse direction: how well can the answer predict the query ($Q|A$)? We define Reverse Mutual Information (RMI) to quantify the information gain about the query conditioned on the answer. Our analyses reveal that both extremes of RMI signal quality issues: low RMI indicates semantic misalignment, while excessively high RMI may contain defect patterns that LLMs easily recognize. Furthermore, we introduce a selection strategy based on the disagreement between strong and weak models to identify samples that are valid yet challenging. Experiments on the WarriorCoder dataset demonstrate that selecting just 25% of data using stratified RMI achieves comparable performance to full-data training, significantly outperforming existing data selection methods. Our approach highlights the importance of bidirectional semantic coherence in synthetic data curation, offering a scalable pathway to reduce computational costs without sacrificing model capability.",
+      "authors": [
+        "Jiayin Lei",
+        "Ming Ma",
+        "Yunxi Duan",
+        "Chenxi Li",
+        "Tianming Yang"
+      ],
+      "url": "https://arxiv.org/abs/2603.12165",
+      "published": "2026-03-12T17:01:22+00:00",
+      "updated": "2026-03-15T12:03:36+00:00",
+      "categories": [
+        "cs.CL"
+      ],
+      "matched_topics": [
+        "Interpretability"
+      ],
+      "match_method": "keyword",
+      "best_score": 0.0,
+      "backfilled": true
+    },
+    {
+      "id": "2603.08309",
+      "title": "Concept-Guided Fine-Tuning: Steering ViTs away from Spurious Correlations to Improve Robustness",
+      "abstract": "Vision Transformers (ViTs) often degrade under distribution shifts because they rely on spurious correlations, such as background cues, rather than semantically meaningful features. Existing regularization methods, typically relying on simple foreground-background masks, which fail to capture the fine-grained semantic concepts that define an object (e.g., ``long beak'' and ``wings'' for a ``bird''). As a result, these methods provide limited robustness to distribution shifts. To address this limitation, we introduce a novel finetuning framework that steers model reasoning toward concept-level semantics. Our approach optimizes the model's internal relevance maps to align with spatially grounded concept masks. These masks are generated automatically, without manual annotation: class-relevant concepts are first proposed using an LLM-based, label-free method, and then segmented using a VLM. The finetuning objective aligns relevance with these concept regions while simultaneously suppressing focus on spurious background areas. Notably, this process requires only a minimal set of images and uses half of the dataset classes. Extensive experiments on five out-of-distribution benchmarks demonstrate that our method improves robustness across multiple ViT-based models. Furthermore, we show that the resulting relevance maps exhibit stronger alignment with semantic object parts, offering a scalable path toward more robust and interpretable vision models. Finally, we confirm that concept-guided masks provide more effective supervision for model robustness than conventional segmentation maps, supporting our central hypothesis.",
+      "authors": [
+        "Yehonatan Elisha",
+        "Oren Barkan",
+        "Noam Koenigstein"
+      ],
+      "url": "https://arxiv.org/abs/2603.08309",
+      "published": "2026-03-09T12:31:14+00:00",
+      "updated": "2026-03-15T05:03:19+00:00",
+      "categories": [
+        "cs.CV",
+        "cs.AI",
+        "cs.LG"
+      ],
+      "matched_topics": [
+        "Interpretability"
+      ],
+      "match_method": "keyword",
+      "best_score": 0.0,
+      "backfilled": true
+    },
+    {
+      "id": "2603.08956",
+      "title": "A Survey of Reinforcement Learning For Economics",
+      "abstract": "This survey (re)introduces reinforcement learning methods to economists. The curse of dimensionality limits how far exact dynamic programming can be effectively applied, forcing us to rely on suitably \"small\" problems or our ability to convert \"big\" problems into smaller ones. While this reduction has been sufficient for many classical applications, a growing class of economic models resists such reduction. Reinforcement learning algorithms offer a natural, sample-based extension of dynamic programming, extending tractability to problems with high-dimensional states, continuous actions, and strategic interactions. I review the theory connecting classical planning to modern learning algorithms and demonstrate their mechanics through simulated examples in pricing, inventory control, strategic games, and preference elicitation. I also examine the practical vulnerabilities of these algorithms, noting their brittleness, sample inefficiency, sensitivity to hyperparameters, and the absence of global convergence guarantees outside of tabular settings. The successes of reinforcement learning remain strictly bounded by these constraints, as well as a reliance on accurate simulators. When guided by economic structure, reinforcement learning provides a remarkably flexible framework. It stands as an imperfect, but promising, addition to the computational economist's toolkit. A companion survey (Rust and Rawat, 2026b) covers the inverse problem of inferring preferences from observed behavior. All simulation code is publicly available.",
+      "authors": [
+        "Pranjal Rawat"
+      ],
+      "url": "https://arxiv.org/abs/2603.08956",
+      "published": "2026-03-09T21:43:10+00:00",
+      "updated": "2026-03-15T17:49:37+00:00",
+      "categories": [
+        "econ.GN",
+        "cs.LG"
+      ],
+      "matched_topics": [
+        "Interpretability"
+      ],
+      "match_method": "keyword",
+      "best_score": 0.0,
+      "backfilled": true
+    },
+    {
+      "id": "2603.09453",
+      "title": "Variational Routing: A Scalable Bayesian Framework for Calibrated Mixture-of-Experts Transformers",
+      "abstract": "Foundation models are increasingly being deployed in contexts where understanding the uncertainty of their outputs is critical to ensuring responsible deployment. While Bayesian methods offer a principled approach to uncertainty quantification, their computational overhead renders their use impractical for training or inference at foundation model scale. State-of-the-art models achieve parameter counts in the trillions through carefully engineered sparsity including Mixture-of-Experts (MoE) layers. In this work, we demonstrate calibrated uncertainty at scale by introducing Variational Mixture-of-Experts Routing (VMoER), a structured Bayesian approach for modelling uncertainty in MoE layers. VMoER confines Bayesian inference to the expert-selection stage which is typically done by a deterministic routing network. We instantiate VMoER using two inference strategies: amortised variational inference over routing logits and inferring a temperature parameter for stochastic expert selection. Across tested foundation models, VMoER improves routing stability under noise by 38\\%, reduces calibration error by 94\\%, and increases out-of-distribution AUROC by 12\\%, while incurring less than 1\\% additional FLOPs. These results suggest VMoER offers a scalable path toward robust and uncertainty-aware foundation models.",
+      "authors": [
+        "Albus Yizhuo Li",
+        "Matthew Wicker"
+      ],
+      "url": "https://arxiv.org/abs/2603.09453",
+      "published": "2026-03-10T10:07:53+00:00",
+      "updated": "2026-03-15T15:47:04+00:00",
+      "categories": [
+        "cs.LG",
+        "cs.AI",
+        "stat.ML"
+      ],
+      "matched_topics": [
+        "Interpretability"
+      ],
+      "match_method": "keyword",
+      "best_score": 0.0,
+      "backfilled": true
+    },
+    {
+      "id": "2603.08478",
+      "title": "STRIDE: Structured Lagrangian and Stochastic Residual Dynamics via Flow Matching",
+      "abstract": "Robotic systems operating in unstructured environments must operate under significant uncertainty arising from intermittent contacts, frictional variability, and unmodeled compliance. While recent model-free approaches have demonstrated impressive performance, many deployment settings still require predictive models that support planning, constraint handling, and online adaptation. Analytical rigid-body models provide strong physical structure but often fail to capture complex interaction effects, whereas purely data-driven models may violate physical consistency, exhibit data bias, and accumulate long-horizon drift. In this work, we propose STRIDE, a dynamics learning framework that explicitly separates conservative rigid-body mechanics from uncertain, effectively stochastic non-conservative interaction effects. The structured component is modeled using a Lagrangian Neural Network (LNN) to preserve energy-consistent inertial dynamics, while residual interaction forces are represented using Conditional Flow Matching (CFM) to capture multi-modal interaction phenomena. The two components are trained jointly end-to-end, enabling the model to retain physical structure while representing complex stochastic behavior. We evaluate STRIDE on systems of increasing complexity, including a pendulum, the Unitree Go1 quadruped, and the Unitree G1 humanoid. Results show 20% reduction in long-horizon prediction error and 30% reduction in contact force prediction error compared to deterministic residual baselines, supporting more reliable model-based control in uncertain robotic environments.",
+      "authors": [
+        "Prakrut Kotecha",
+        "Ganga Nair B",
+        "Shishir Kolathaya"
+      ],
+      "url": "https://arxiv.org/abs/2603.08478",
+      "published": "2026-03-09T15:15:21+00:00",
+      "updated": "2026-03-15T17:35:08+00:00",
+      "categories": [
+        "cs.RO",
+        "cs.LG"
+      ],
+      "matched_topics": [
+        "Interpretability"
+      ],
+      "match_method": "keyword",
+      "best_score": 0.0,
+      "backfilled": true
+    },
+    {
+      "id": "2603.10277",
+      "title": "Estimating condition number with Graph Neural Networks",
+      "abstract": "For large sparse matrices, we almost never compute the condition number exactly because that would require computing the full SVD or full eigenvalue decompositionIn this paper, we propose a fast method for estimating the condition number of sparse matrices using graph neural networks (GNNs). To enable efficient training and inference of GNNs, our proposed feature engineering for GNNs achieves $\\mathrm{O}(\\mathrm{nnz} + n)$, where $\\mathrm{nnz}$ is the number of non-zero elements in the matrix and $n$ denotes the matrix dimension. We propose two prediction schemes for estimating the matrix condition number using GNNs. One follows by decomposing the condition number and predicts the relatively more computationally intensive part $\\|\\mathbf{A}^{-1}\\|$, while the other is to predict the whole condition number $κ$. Our approach can be extended to an arbitrary norm. The extensive experiments for the two schemes are conducted for 1-norm and 2-norm condition number estimation, which show that our method achieves a significant speedup over the traditional numerical estimation methods.",
+      "authors": [
+        "Erin Carson",
+        "Xinye Chen"
+      ],
+      "url": "https://arxiv.org/abs/2603.10277",
+      "published": "2026-03-10T23:38:48+00:00",
+      "updated": "2026-03-15T16:37:03+00:00",
+      "categories": [
+        "cs.LG",
+        "math.NA"
+      ],
+      "matched_topics": [
+        "Graph Neural Networks"
+      ],
+      "match_method": "keyword",
+      "best_score": 0.0,
+      "backfilled": true
+    },
+    {
+      "id": "2603.11413",
+      "title": "Evaluation format, not model capability, drives triage failure in the assessment of consumer health AI",
+      "abstract": "Ramaswamy et al. reported in \\textit{Nature Medicine} that ChatGPT Health under-triages 51.6\\% of emergencies, concluding that consumer-facing AI triage poses safety risks. However, their evaluation used an exam-style protocol -- forced A/B/C/D output, knowledge suppression, and suppression of clarifying questions -- that differs fundamentally from how consumers use health chatbots. We tested five frontier LLMs (GPT-5.2, Claude Sonnet 4.6, Claude Opus 4.6, Gemini 3 Flash, Gemini 3.1 Pro) on a 17-scenario partial replication bank under constrained (exam-style, 1,275 trials) and naturalistic (patient-style messages, 850 trials) conditions, with targeted ablations and prompt-faithful checks using the authors' released prompts. Naturalistic interaction improved triage accuracy by 6.4 percentage points ($p = 0.015$). Diabetic ketoacidosis was correctly triaged in 100\\% of trials across all models and conditions. Asthma triage improved from 48\\% to 80\\%. The forced A/B/C/D format was the dominant failure mechanism: three models scored 0--24\\% with forced choice but 100\\% with free text (all $p < 10^{-8}$), consistently recommending emergency care in their own words while the forced-choice format registered under-triage. Prompt-faithful checks on the authors' exact released prompts confirmed the scaffold produces model-dependent, case-dependent results. The headline under-triage rate is highly contingent on evaluation format and should not be interpreted as a stable estimate of deployed triage behavior. Valid evaluation of consumer health AI requires testing under conditions that reflect actual use.",
+      "authors": [
+        "David Fraile Navarro",
+        "Farah Magrabi",
+        "Enrico Coiera"
+      ],
+      "url": "https://arxiv.org/abs/2603.11413",
+      "published": "2026-03-12T00:58:22+00:00",
+      "updated": "2026-03-15T12:43:26+00:00",
+      "categories": [
+        "cs.HC",
+        "cs.AI"
+      ],
+      "matched_topics": [
+        "Interpretability"
+      ],
+      "match_method": "keyword",
+      "best_score": 0.0,
+      "backfilled": true
+    },
+    {
+      "id": "2603.11445",
+      "title": "Verified Multi-Agent Orchestration: A Plan-Execute-Verify-Replan Framework for Complex Query Resolution",
+      "abstract": "We present Verified Multi-Agent Orchestration (VMAO), a framework that coordinates specialized LLM-based agents through a verification-driven iterative loop. Given a complex query, our system decomposes it into a directed acyclic graph (DAG) of sub-questions, executes them through domain-specific agents in parallel, verifies result completeness via LLM-based evaluation, and adaptively replans to address gaps. The key contributions are: (1) dependency-aware parallel execution over a DAG of sub-questions with automatic context propagation, (2) verification-driven adaptive replanning that uses an LLM-based verifier as an orchestration-level coordination signal, and (3) configurable stop conditions that balance answer quality against resource usage. On 25 expert-curated market research queries, VMAO improves answer completeness from 3.1 to 4.2 and source quality from 2.6 to 4.1 (1-5 scale) compared to a single-agent baseline, demonstrating that orchestration-level verification is an effective mechanism for multi-agent quality assurance.",
+      "authors": [
+        "Xing Zhang",
+        "Yanwei Cui",
+        "Guanghui Wang",
+        "Wei Qiu",
+        "Ziyuan Li",
+        "Fangwei Han",
+        "Yajing Huang",
+        "Hengzhi Qiu",
+        "Bing Zhu",
+        "Peiyang He"
+      ],
+      "url": "https://arxiv.org/abs/2603.11445",
+      "published": "2026-03-12T02:10:10+00:00",
+      "updated": "2026-03-15T05:39:42+00:00",
+      "categories": [
+        "cs.AI",
+        "cs.MA"
+      ],
+      "matched_topics": [
+        "Graph Neural Networks"
+      ],
+      "match_method": "keyword",
+      "best_score": 0.0,
+      "backfilled": true
+    },
+    {
+      "id": "2603.11935",
+      "title": "MobileKernelBench: Can LLMs Write Efficient Kernels for Mobile Devices?",
+      "abstract": "Large language models (LLMs) have demonstrated remarkable capabilities in code generation, yet their potential for generating kernels specifically for mobile devices remains largely unexplored. In this work, we extend the scope of automated kernel generation to the mobile domain to investigate the central question: Can LLMs write efficient kernels for mobile devices? To enable systematic investigation, we introduce MobileKernelBench, a comprehensive evaluation framework comprising a benchmark prioritizing operator diversity and cross-framework interoperability, coupled with an automated pipeline that bridges the host-device gap for on-device verification. Leveraging this framework, we conduct extensive evaluation on the CPU backend of Mobile Neural Network (MNN), revealing that current LLMs struggle with the engineering complexity and data scarcity inherent to mobile frameworks; standard models and even fine-tuned variants exhibit high compilation failure rates (over 54%) and negligible performance gains due to hallucinations and a lack of domain-specific grounding. To overcome these limitations, we propose the Mobile Kernel Agent (MoKA), a multi-agent system equipped with repository-aware reasoning and a plan-and-execute paradigm. Validated on MobileKernelBench, MoKA achieves state-of-the-art performance, boosting compilation success to 93.7% and enabling 27.4% of generated kernels to deliver measurable speedups over native libraries.",
+      "authors": [
+        "Xingze Zou",
+        "Jing Wang",
+        "Yuhua Zheng",
+        "Xueyi Chen",
+        "Haolei Bai",
+        "Lingcheng Kong",
+        "Syed A. R. Abu-Bakar",
+        "Zhaode Wang",
+        "Chengfei Lv",
+        "Haoji Hu",
+        "Huan Wang"
+      ],
+      "url": "https://arxiv.org/abs/2603.11935",
+      "published": "2026-03-12T13:48:11+00:00",
+      "updated": "2026-03-15T08:45:48+00:00",
+      "categories": [
+        "cs.LG",
+        "cs.AI"
+      ],
+      "matched_topics": [
+        "Interpretability"
+      ],
+      "match_method": "keyword",
+      "best_score": 0.0,
+      "backfilled": true
+    },
+    {
       "id": "2603.14406",
       "title": "Graph-Based Deep Learning for Intelligent Detection of Energy Losses, Theft, and Operational Inefficiencies in Oil & Gas Production Networks",
       "abstract": "Early detection of energy losses, theft, and operational inefficiencies remains a critical challenge in oil and gas production systems due to complex interdependencies among wells and facilities, evolving operating conditions, and limited labeled anomaly data. Traditional machine learning approaches often treat production units independently and struggle under temporal distribution shifts. This study proposes a spatiotemporal graph-based deep learning framework for anomaly detection in oil and gas production networks. The production system is modeled as a hierarchical graph of wells, facilities, and fields, with additional peer connections among wells sharing common infrastructure. Weakly supervised anomaly labels are derived from physically informed heuristics based on production, pressure, and flow behavior. Temporal dynamics are captured through sequence modeling, while relational dependencies are learned using a Temporal Graph Attention Network. Under time-based evaluation, the proposed model achieves an ROC-AUC of about 0.98 and anomaly recall above 0.93, demonstrating improved robustness and practical potential for proactive monitoring in real-world energy operations.",
@@ -3937,6 +4236,195 @@
       "matched_topics": [],
       "match_method": "none",
       "best_score": 0.042
+    },
+    {
+      "id": "2603.08448",
+      "title": "A prospective clinical feasibility study of a conversational diagnostic AI in an ambulatory primary care clinic",
+      "abstract": "Large language model (LLM)-based AI systems have shown promise for patient-facing diagnostic and management conversations in simulated settings. Translating these systems into clinical practice requires assessment in real-world workflows with rigorous safety oversight. We report a prospective, single-arm feasibility study of an LLM-based conversational AI, the Articulate Medical Intelligence Explorer (AMIE), conducting clinical history taking and presentation of potential diagnoses for patients to discuss with their provider at urgent care appointments at a leading academic medical center. 100 adult patients completed an AMIE text-chat interaction up to 5 days before their appointment. We sought to assess the conversational safety and quality, patient and clinician experience, and clinical reasoning capabilities compared to primary care providers (PCPs). Human safety supervisors monitored all patient-AMIE interactions in real time and did not need to intervene to stop any consultations based on pre-defined criteria. Patients reported high satisfaction and their attitudes towards AI improved after interacting with AMIE (p < 0.001). PCPs found AMIE's output useful with a positive impact on preparedness. AMIE's differential diagnosis (DDx) included the final diagnosis, per chart review 8 weeks post-encounter, in 90% of cases, with 75% top-3 accuracy. Blinded assessment of AMIE and PCP DDx and management (Mx) plans suggested similar overall DDx and Mx plan quality, without significant differences for DDx (p = 0.6) and appropriateness and safety of Mx (p = 0.1 and 1.0, respectively). PCPs outperformed AMIE in the practicality (p = 0.003) and cost effectiveness (p = 0.004) of Mx. While further research is needed, this study demonstrates the initial feasibility, safety, and user acceptance of conversational AI in a real-world setting, representing crucial steps towards clinical translation.",
+      "authors": [
+        "Peter Brodeur",
+        "Jacob M. Koshy",
+        "Anil Palepu",
+        "Khaled Saab",
+        "Ava Homiar",
+        "Roma Ruparel",
+        "Charles Wu",
+        "Ryutaro Tanno",
+        "Joseph Xu",
+        "Amy Wang",
+        "David Stutz",
+        "Wei-Hung Weng",
+        "Hannah M. Ferrera",
+        "David Barrett",
+        "Lindsey Crowley",
+        "Jihyeon Lee",
+        "Spencer E. Rittner",
+        "Ellery Wulczyn",
+        "Selena K. Zhang",
+        "Elahe Vedadi",
+        "Christine G. Kohn",
+        "Kavita Kulkarni",
+        "Vinay Kadiyala",
+        "Sara Mahdavi",
+        "Wendy Du",
+        "Jessica M. Williams",
+        "David Feinbloom",
+        "Renee Wong",
+        "Tao Tu",
+        "Petar Sirkovic",
+        "Alessio Orlandi",
+        "Christopher Semturs",
+        "Yun Liu",
+        "Juraj Gottweis",
+        "Dale R. Webster",
+        "Joëlle Barral",
+        "Katherine Chou",
+        "Pushmeet Kohli",
+        "Avinatan Hassidim",
+        "Yossi Matias",
+        "James Manyika",
+        "Rob Fields",
+        "Jonathan X. Li",
+        "Marc L. Cohen",
+        "Vivek Natarajan",
+        "Mike Schaekermann",
+        "Alan Karthikesalingam",
+        "Adam Rodman"
+      ],
+      "url": "https://arxiv.org/abs/2603.08448",
+      "published": "2026-03-09T14:43:40+00:00",
+      "updated": "2026-03-15T22:38:14+00:00",
+      "categories": [
+        "cs.HC",
+        "cs.AI",
+        "cs.CL",
+        "cs.LG"
+      ],
+      "matched_topics": [],
+      "match_method": "none",
+      "best_score": 0.306,
+      "backfilled": true
+    },
+    {
+      "id": "2603.07339",
+      "title": "Agora: Teaching the Skill of Consensus-Finding with AI Personas Grounded in Human Voice",
+      "abstract": "Deliberative democratic theory suggests that civic competence: the capacity to navigate disagreement, weigh competing values, and arrive at collective decisions is not innate but developed through practice. Yet opportunities to cultivate these skills remain limited, as traditional deliberative processes like citizens' assemblies reach only a small fraction of the population. We present Agora, an early-stage AI-powered platform that uses LLMs to organize authentic human voices on policy issues, helping users build consensus-finding skills by proposing and revising policy recommendations, hearing supporting and opposing perspectives, and receiving feedback on how policy changes affect predicted support. In a preliminary study with 44 university students, participants using the full interface (with access to voice explanations) reported higher levels of problem-solving skills, internal deliberation, and produced higher quality consensus statements compared to a control condition showing only aggregate support distributions. These initial findings point toward a promising direction for scaling civic education.",
+      "authors": [
+        "Suyash Fulay",
+        "Prerna Ravi",
+        "Om Gokhale",
+        "Eugene Yi",
+        "Michiel Bakker",
+        "Deb Roy"
+      ],
+      "url": "https://arxiv.org/abs/2603.07339",
+      "published": "2026-03-07T20:59:56+00:00",
+      "updated": "2026-03-15T15:18:56+00:00",
+      "categories": [
+        "cs.HC",
+        "cs.AI",
+        "cs.CE"
+      ],
+      "matched_topics": [],
+      "match_method": "none",
+      "best_score": 0.3,
+      "backfilled": true
+    },
+    {
+      "id": "2603.07431",
+      "title": "OrthoFormer: Instrumental Variable Estimation in Transformer Hidden States via Neural Control Functions",
+      "abstract": "Transformer architectures excel at sequential modeling yet remain fundamentally limited by correlational learning - they capture spurious associations induced by latent confounders rather than invariant causal mechanisms. We identify this as an epistemological challenge: standard Transformers conflate static background factors (intrinsic identity, style, context) with dynamic causal flows (state evolution, mechanism), leading to catastrophic out-of-distribution failure. We propose OrthoFormer, a causally grounded architecture that embeds instrumental variable estimation directly into Transformer blocks via neural control functions. Our framework rests on four theoretical pillars: Structural Directionality (time-arrow enforcement), Representation Orthogonality (latent-noise separation), Causal Sparsity (Markov Blanket approximation), and End-to-End Consistency (gradient- detached stage separation). We prove that OrthoFormer achieves bias strictly less than OLS for any valid instrument lag, with residual bias decaying geometrically as O(\\r{ho}k ). We characterize the bias-variance-exogeneity trilemma inherent in self-instrumenting and identify the neural forbidden regression - where removing gradient detachment improves prediction loss while destroying causal validity. Experiments confirm all theoretical predictions. OrthoFormer represents a paradigm shift from correlational to causal sequence modeling, with implications for robustness, interpretability, and reliable decision-making under distribution shift.",
+      "authors": [
+        "Charles Luo"
+      ],
+      "url": "https://arxiv.org/abs/2603.07431",
+      "published": "2026-03-08T03:05:16+00:00",
+      "updated": "2026-03-15T20:16:51+00:00",
+      "categories": [
+        "cs.LG",
+        "cs.AI"
+      ],
+      "matched_topics": [],
+      "match_method": "none",
+      "best_score": 0.276,
+      "backfilled": true
+    },
+    {
+      "id": "2603.11558",
+      "title": "RoboClaw: An Agentic Framework for Scalable Long-Horizon Robotic Tasks",
+      "abstract": "Vision-Language-Action (VLA) systems have shown strong potential for language-driven robotic manipulation. However, scaling them to long-horizon tasks remains challenging. Existing pipelines typically separate data collection, policy learning, and deployment, resulting in heavy reliance on manual environment resets and brittle multi-policy execution. We present RoboClaw, an agentic robotics framework that unifies data collection, policy learning, and task execution under a single VLM-driven controller. At the policy level, RoboClaw introduces Entangled Action Pairs (EAP), which couple forward manipulation behaviors with inverse recovery actions to form self-resetting loops for autonomous data collection. This mechanism enables continuous on-policy data acquisition and iterative policy refinement with minimal human intervention. During deployment, the same agent performs high-level reasoning and dynamically orchestrates learned policy primitives to accomplish long-horizon tasks. By maintaining consistent contextual semantics across collection and execution, RoboClaw reduces mismatch between the two phases and improves multi-policy robustness. Experiments in real-world manipulation tasks demonstrate improved stability and scalability compared to conventional open-loop pipelines, while significantly reducing human effort throughout the robot lifecycle, achieving a 25% improvement in success rate over baseline methods on long-horizon tasks and reducing human time investment by 53.7%.",
+      "authors": [
+        "Ruiying Li",
+        "Yunlang Zhou",
+        "YuYao Zhu",
+        "Kylin Chen",
+        "Jingyuan Wang",
+        "Sukai Wang",
+        "Kongtao Hu",
+        "Minhui Yu",
+        "Bowen Jiang",
+        "Zhan Su",
+        "Jiayao Ma",
+        "Xin He",
+        "Yongjian Shen",
+        "Yang Yang",
+        "Guanghui Ren",
+        "Maoqing Yao",
+        "Wenhao Wang",
+        "Yao Mu"
+      ],
+      "url": "https://arxiv.org/abs/2603.11558",
+      "published": "2026-03-12T05:22:59+00:00",
+      "updated": "2026-03-15T19:15:01+00:00",
+      "categories": [
+        "cs.RO",
+        "cs.AI"
+      ],
+      "matched_topics": [],
+      "match_method": "none",
+      "best_score": 0.223,
+      "backfilled": true
+    },
+    {
+      "id": "2603.10789",
+      "title": "LuxBorrow: From Pompier to Pompjee, Tracing Borrowing in Luxembourgish",
+      "abstract": "We present LuxBorrow, a borrowing-first analysis of Luxembourgish (LU) news spanning 27 years (1999-2025), covering 259,305 RTL articles and 43.7M tokens. Our pipeline combines sentence-level language identification (LU/DE/FR/EN) with a token-level borrowing resolver restricted to LU sentences, using lemmatization, a collected loanword registry, and compiled morphological and orthographic rules. Empirically, LU remains the matrix language across all documents, while multilingual practice is pervasive: 77.1% of articles include at least one donor language and 65.4% use three or four. Breadth does not imply intensity: median code-mixing index (CMI) increases from 3.90 (LU+1) to only 7.00 (LU+3), indicating localized insertions rather than balanced bilingual text. Domain and period summaries show moderate but persistent mixing, with CMI rising from 6.1 (1999-2007) to a peak of 8.4 in 2020. Token-level adaptations total 25,444 instances and exhibit a mixed profile: morphological 63.8%, orthographic 35.9%, lexical 0.3%. The most frequent individual rules are orthographic, such as on->oun and eur->er, while morphology is collectively dominant. Diachronically, code-switching intensifies, and morphologically adapted borrowings grow from a small base. French overwhelmingly supplies adapted items, with modest growth for German and negligible English. We advocate borrowing-centric evaluation, including borrowed token and type rates, donor entropy over borrowed items, and assimilation ratios, rather than relying only on document-level mixing indices.",
+      "authors": [
+        "Nina Hosseini-Kivanani",
+        "Fred Philippy"
+      ],
+      "url": "https://arxiv.org/abs/2603.10789",
+      "published": "2026-03-11T14:01:02+00:00",
+      "updated": "2026-03-15T21:00:17+00:00",
+      "categories": [
+        "cs.CL"
+      ],
+      "matched_topics": [],
+      "match_method": "none",
+      "best_score": 0.216,
+      "backfilled": true
+    },
+    {
+      "id": "2603.10886",
+      "title": "Kernel Tests of Equivalence",
+      "abstract": "We propose novel kernel-based tests for assessing the equivalence between distributions. Traditional goodness-of-fit testing is inappropriate for concluding the absence of distributional differences, because failure to reject the null hypothesis may simply be a result of lack of test power, also known as the Type-II error. This motivates \\emph{equivalence testing}, which aims to assess the \\emph{absence} of a statistically meaningful effect under controlled error rates. However, existing equivalence tests are either limited to parametric distributions or focus only on specific moments rather than the full distribution. We address these limitations using two kernel-based statistical discrepancies: the \\emph{kernel Stein discrepancy} and the \\emph{Maximum Mean Discrepancy}. The null hypothesis of our proposed tests assumes the candidate distribution differs from the nominal distribution by at least a pre-defined margin, which is measured by these discrepancies. We propose two approaches for computing the critical values of the tests, one using an asymptotic normality approximation, and another based on bootstrapping. Numerical experiments are conducted to assess the performance of these tests.",
+      "authors": [
+        "Xing Liu",
+        "Axel Gandy"
+      ],
+      "url": "https://arxiv.org/abs/2603.10886",
+      "published": "2026-03-11T15:30:57+00:00",
+      "updated": "2026-03-15T21:47:48+00:00",
+      "categories": [
+        "stat.ML",
+        "cs.LG",
+        "stat.ME"
+      ],
+      "matched_topics": [],
+      "match_method": "none",
+      "best_score": 0.119,
+      "backfilled": true
     }
-  ]
+  ],
+  "patched_at": "2026-03-17T03:20:02.876586+00:00"
 }
