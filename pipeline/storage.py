@@ -127,6 +127,33 @@ def load_papers(root: Path, d: date) -> list[Paper] | None:
     return papers
 
 
+def load_matched_summaries(root: Path, d: date):
+    """
+    Load a DaySummary from an already-filtered JSON file.
+    Used by --notify-only mode. Returns None if file doesn't exist.
+    Imported lazily to avoid circular imports with notifier.
+    """
+    from notifier import PaperSummary, DaySummary
+
+    path = _path_for_date(root, d)
+    if not path.exists():
+        return None
+    payload = json.loads(path.read_text(encoding="utf-8"))
+    papers  = payload["papers"]
+
+    matched = [
+        PaperSummary(
+            title          = p["title"],
+            url            = p["url"],
+            authors        = p["authors"],
+            abstract       = p["abstract"],
+            matched_topics = p["matched_topics"],
+        )
+        for p in papers if p.get("matched_topics")
+    ]
+    return DaySummary(day=d, matched=matched, total=len(papers))
+
+
 def date_has_data(root: Path, d: date) -> bool:
     return _path_for_date(root, d).exists()
 

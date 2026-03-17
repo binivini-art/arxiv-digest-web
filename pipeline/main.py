@@ -25,7 +25,8 @@ sys.path.insert(0, str(Path(__file__).parent))
 from fetcher   import fetch_recent_days
 from filter    import filter_papers, Topic
 from storage   import (save_papers, date_has_data, list_available_dates,
-                       load_papers, update_available_dates, prune_old_files)
+                       load_papers, load_matched_summaries,
+                       update_available_dates, prune_old_files)
 from notifier  import send_digest, DaySummary, PaperSummary
 
 CONFIG_PATH = ROOT / "config.yaml"
@@ -67,6 +68,7 @@ def filter_and_save(day: date, papers: list, topics: list[Topic], config: dict) 
             title          = r.paper.title,
             url            = r.paper.url,
             authors        = r.paper.authors,
+            abstract       = r.paper.abstract,
             matched_topics = r.matched_topics,
         )
         for r in matched
@@ -156,6 +158,26 @@ def run_refetch(config: dict, enabled: list[Topic], cats: list[str], max_res: in
     return summaries
 
 
+def run_notify_only() -> list:
+    """
+    Read the most recently stored day's JSON and return its DaySummary.
+    No fetching, no filtering — used by the 07:00 KST notification job.
+    """
+    stored = list_available_dates(ROOT)
+    if not stored:
+        print("[main] No stored data found for notification.")
+        return []
+
+    latest = stored[0]
+    print(f"[main] Loading latest stored day for notification: {latest}")
+    summary = load_matched_summaries(ROOT, latest)
+    if summary is None:
+        print(f"[main] Could not load {latest}.")
+        return []
+    print(f"[main] {latest}: {len(summary.matched)} matched / {summary.total} total")
+    return [summary]
+
+
 def main():
     parser = argparse.ArgumentParser(
         description="arXiv Digest pipeline",
@@ -173,6 +195,11 @@ def main():
              "overwriting existing data.",
     )
     parser.add_argument(
+        "--notify-only", action="store_true",
+        help="Skip fetch/filter entirely — just read the latest stored day "
+             "and send the digest email. Used by the scheduled 07:00 KST notify job.",
+    )
+    parser.add_argument(
         "--notify", action="store_true",
         help="Send digest email after the run. Always active in normal mode "
              "when credentials are configured; opt-in for --refilter/--refetch.",
@@ -185,13 +212,17 @@ def main():
 
     if args.refilter and args.refetch:
         parser.error("--refilter and --refetch are mutually exclusive.")
+    if getattr(args, 'notify_only', False) and (args.refilter or args.refetch):
+        parser.error("--notify-only cannot be combined with --refilter or --refetch.")
 
-    mode = ("refetch" if args.refetch else
-            "refilter" if args.refilter else
+    notify_only = getattr(args, 'notify_only', False)
+    mode = ("notify-only" if notify_only else
+            "refetch"     if args.refetch else
+            "refilter"    if args.refilter else
             "normal")
 
-    # Notification is always on for normal cron runs; opt-in for manual modes.
-    do_notify = (mode == "normal") or args.notify
+    # Notification: always on for normal + notify-only; opt-in for manual modes
+    do_notify = (mode in ("normal", "notify-only")) or args.notify
 
     print("=" * 60)
     print(f"arXiv Digest  [{mode}"
@@ -206,15 +237,18 @@ def main():
     max_res = config.get("max_results", 2000)
     print(f"[main] Topics: {[t.name for t in enabled]}")
 
-    if mode == "refetch":
+    if mode == "notify-only":
+        summaries = run_notify_only()
+    elif mode == "refetch":
         summaries = run_refetch(config, enabled, cats, max_res)
     elif mode == "refilter":
         summaries = run_refilter(config, enabled)
     else:
         summaries = run_normal(config, enabled, cats, max_res)
 
-    update_available_dates(ROOT)
-    prune_old_files(ROOT, retention_days=config.get("retention_days", 90))
+    if mode != "notify-only":
+        update_available_dates(ROOT)
+        prune_old_files(ROOT, retention_days=config.get("retention_days", 90))
 
     # ── Notify ────────────────────────────────────────────────────────────────
     if do_notify:

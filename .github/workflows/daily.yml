@@ -3,13 +3,27 @@ name: Daily arXiv Digest
 on:
   schedule:
     - cron: "30 0 * * 2-6"   # 00:30 UTC Tue–Sat — just after arXiv's midnight UTC cutoff
+    - cron: "0 22 * * 1-5"   # 22:00 UTC Mon–Fri = 07:00 KST Tue–Sat (notification)
   workflow_dispatch:
+    inputs:
+      mode:
+        description: "Run mode"
+        required: false
+        default: "pipeline"
+        type: choice
+        options: [pipeline, notify]
 
 permissions:
   contents: write
 
 jobs:
-  build-and-deploy:
+
+  # ── Job 1: fetch + filter + save data ──────────────────────────────────────
+  # Runs at 00:30 UTC. No email sent here.
+  pipeline:
+    if: |
+      github.event_name == 'workflow_dispatch' && inputs.mode == 'pipeline' ||
+      github.event_name == 'schedule' && startsWith(github.event.schedule, '30 0')
     runs-on: ubuntu-latest
     timeout-minutes: 30
 
@@ -35,16 +49,9 @@ jobs:
           key: ${{ runner.os }}-hf-MiniLM
           restore-keys: ${{ runner.os }}-hf-
 
-      - name: Run pipeline
+      - name: Run pipeline (no email)
         run: python pipeline/main.py
-        env:
-          NOTIFY_GMAIL_USER:     ${{ secrets.NOTIFY_GMAIL_USER }}
-          NOTIFY_GMAIL_APP_PASS: ${{ secrets.NOTIFY_GMAIL_APP_PASS }}
-          NOTIFY_TO:             ${{ secrets.NOTIFY_TO }}
 
-      # ── Commit data back to main ──────────────────────────────────────────
-      # Persists data/papers/*.json and data/available_dates.json across runs.
-      # index.html and date.html are static and committed once — no rebuild needed.
       - name: Commit data to main
         run: |
           git config user.name  "github-actions[bot]"
@@ -53,8 +60,6 @@ jobs:
           git diff --cached --quiet || git commit -m "chore: papers $(date -u +'%Y-%m-%d') [skip ci]"
           git push origin main
 
-      # ── Deploy to GitHub Pages ────────────────────────────────────────────
-      # Copies the full site (static shell + data + shared assets) to gh-pages.
       - name: Deploy to gh-pages
         run: |
           mkdir /tmp/site
@@ -72,3 +77,35 @@ jobs:
           git add index.html date.html static/ data/
           git diff --cached --quiet || git commit -m "deploy: $(date -u +'%Y-%m-%d %H:%M UTC')"
           git push origin gh-pages
+
+
+  # ── Job 2: send notification email ─────────────────────────────────────────
+  # Runs at 22:00 UTC (= 07:00 KST next morning). Reads stored data, no fetch.
+  notify:
+    if: |
+      github.event_name == 'workflow_dispatch' && inputs.mode == 'notify' ||
+      github.event_name == 'schedule' && startsWith(github.event.schedule, '0 22')
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - name: Checkout main
+        uses: actions/checkout@v4
+        with:
+          ref: main
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Send digest email
+        run: python pipeline/main.py --notify-only
+        env:
+          NOTIFY_GMAIL_USER:     ${{ secrets.NOTIFY_GMAIL_USER }}
+          NOTIFY_GMAIL_APP_PASS: ${{ secrets.NOTIFY_GMAIL_APP_PASS }}
+          NOTIFY_TO:             ${{ secrets.NOTIFY_TO }}
