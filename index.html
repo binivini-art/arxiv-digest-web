@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>arXiv Digest</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📄</text></svg>">
+  <link rel="stylesheet" href="static/global.css">
+</head>
+<body>
+
+<!-- Sidebar -->
+<div class="sidebar-overlay" id="overlay" onclick="DigestDisplay.closeSidebar()"></div>
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-header">
+    <span class="sidebar-title">📅 Browse by Date</span>
+    <button class="sidebar-close" onclick="DigestDisplay.closeSidebar()">✕</button>
+  </div>
+  <div class="sidebar-body" id="calendar-body"></div>
+</div>
+
+<!-- Sticky header -->
+<div class="sticky-top">
+  <div class="header-inner">
+    <div class="header-row">
+      <button class="hamburger" onclick="DigestDisplay.openSidebar()" title="Browse history">☰</button>
+      <div>
+        <div class="header-label">arXiv Digest</div>
+        <div class="header-title" id="header-title">Loading…</div>
+      </div>
+      <span class="header-meta" id="meta-count"></span>
+    </div>
+    <div class="tab-bar" id="tab-bar"></div>
+  </div>
+</div>
+
+<div class="filter-bar" id="filter-bar"></div>
+
+<div class="content">
+  <div id="paper-list"></div>
+  <div class="pagination" id="paper-pagination"></div>
+</div>
+
+<script src="static/display.js"></script>
+<script>
+const MAX_TABS = 7;
+
+let daysData     = [];   // [{ date, label, papers[] }]
+let activeTab    = 0;
+let activeTopics = new Set();
+let page         = 1;
+
+// ── Helpers ────────────────────────────────────────────────────────────────
+// Dates from filenames are UTC calendar dates (YYYY-MM-DD).
+// Parse them explicitly as UTC to avoid browser local-time shifting.
+function parseDateUTC(dateStr) {
+  const [y, m, d] = dateStr.split("-").map(Number);
+  return new Date(Date.UTC(y, m - 1, d));
+}
+
+function todayUTCStr() {
+  const now = new Date();
+  const y = now.getUTCFullYear();
+  const m = String(now.getUTCMonth() + 1).padStart(2, "0");
+  const d = String(now.getUTCDate()).padStart(2, "0");
+  return `${y}-${m}-${d}`;
+}
+
+function tabLabel(dateStr, latestStr) {
+  const delta = Math.round(
+    (parseDateUTC(latestStr) - parseDateUTC(dateStr)) / 86400000
+  );
+  if (delta === 0) return "Latest";
+  if (delta === 1) return "Prev day";
+  const d = parseDateUTC(dateStr);
+  return d.toLocaleString("en-US", { month: "short", day: "numeric", timeZone: "UTC" });
+}
+
+function splitPapers(papers) {
+  const matched   = papers.filter(p => p.matched_topics && p.matched_topics.length > 0);
+  const unmatched = papers.filter(p => !p.matched_topics || p.matched_topics.length === 0);
+  return { matched, unmatched };
+}
+
+// ── Boot ───────────────────────────────────────────────────────────────────
+async function boot() {
+  DigestDisplay.showLoading("paper-list");
+
+  // 1. Fetch available_dates.json
+  let datesIndex;
+  try {
+    const res = await fetch("data/available_dates.json");
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    datesIndex = await res.json();
+  } catch (e) {
+    DigestDisplay.showError("paper-list", "No data yet",
+      "Run the pipeline locally or wait for the next scheduled build.");
+    document.getElementById("header-title").textContent = "arXiv Digest";
+    return;
+  }
+
+  // 2. Collect up to MAX_TABS most recent dates
+  const allDates = [];
+  Object.entries(datesIndex.dates).sort().reverse().forEach(([y, months]) => {
+    Object.entries(months).sort().reverse().forEach(([m, days]) => {
+      days.slice().sort((a, b) => Number(b) - Number(a)).forEach(d => {
+        allDates.push(`${y}-${m}-${d}`);
+      });
+    });
+  });
+
+  const recentDates = allDates.slice(0, MAX_TABS);
+  const todayStr    = recentDates[0];
+
+  // Update header title with the latest date (UTC)
+  const todayDate = parseDateUTC(todayStr);
+  document.getElementById("header-title").textContent =
+    todayDate.toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric", timeZone: "UTC" });
+  document.title = `arXiv Digest · ${todayStr}`;
+
+  // 3. Fetch JSON for each recent date in parallel
+  const fetched = await Promise.all(
+    recentDates.map(async dateStr => {
+      try {
+        const [y, m, d] = dateStr.split("-");
+        const res = await fetch(`data/papers/${y}/${m}/${d}.json`);
+        if (!res.ok) return null;
+        return await res.json();
+      } catch { return null; }
+    })
+  );
+
+  // 4. Build topic style maps from all matched_topics across all days
+  const topicSet = new Set();
+  fetched.forEach(day => {
+    if (!day) return;
+    day.papers.forEach(p => (p.matched_topics || []).forEach(t => topicSet.add(t)));
+  });
+  const allTopics = [...topicSet, "misc"];
+  DigestDisplay.buildTopicStyles(allTopics);
+  activeTopics = new Set(allTopics);
+
+  // 5. Build daysData array
+  daysData = recentDates.map((dateStr, i) => ({
+    date:   dateStr,
+    label:  tabLabel(dateStr, todayStr),
+    papers: fetched[i] ? fetched[i].papers : [],
+  })).filter(d => d.papers.length > 0);
+
+  if (!daysData.length) {
+    DigestDisplay.showError("paper-list", "No papers loaded",
+      "Data files may be missing or empty.");
+    return;
+  }
+
+  // 6. Build tabs
+  const tabBar = document.getElementById("tab-bar");
+  daysData.forEach((day, i) => {
+    const { matched } = splitPapers(day.papers);
+    const btn = document.createElement("button");
+    btn.className = "tab" + (i === 0 ? " active" : "");
+    btn.innerHTML = `${day.label}<span class="tab-count">${matched.length}</span>`;
+    btn.addEventListener("click", () => {
+      activeTab = i; page = 1;
+      document.querySelectorAll(".tab").forEach((t, j) =>
+        t.classList.toggle("active", j === i));
+      render();
+    });
+    tabBar.appendChild(btn);
+  });
+
+  // 7. Build filter chips
+  DigestDisplay.buildFilterChips("filter-bar", activeTopics, () => {
+    page = 1; render();
+  });
+
+  // 8. Build calendar sidebar
+  DigestDisplay.buildCalendar(
+    datesIndex.dates,
+    todayStr,
+    dateStr => {
+      // If date is one of our tabs, switch to it
+      const tabIdx = daysData.findIndex(d => d.date === dateStr);
+      if (tabIdx >= 0) {
+        activeTab = tabIdx; page = 1;
+        document.querySelectorAll(".tab").forEach((t, j) =>
+          t.classList.toggle("active", j === tabIdx));
+        render(); scrollTo(0, 0);
+      } else {
+        // Older date — navigate to date.html
+        window.location.href = `date.html#${dateStr}`;
+      }
+    }
+  );
+
+  render();
+}
+
+// ── Render current tab ─────────────────────────────────────────────────────
+function render() {
+  const day = daysData[activeTab];
+  const { matched, unmatched } = splitPapers(day.papers);
+  const tagged   = unmatched.map(p => ({...p, matched_topics: ["misc"]}));
+  const combined = [...matched, ...tagged];
+  const filtered = combined.filter(p =>
+    (p.matched_topics || []).some(t => activeTopics.has(t))
+  );
+
+  const matchedCount = filtered.filter(p => !p.matched_topics.includes("misc")).length;
+  document.getElementById("meta-count").textContent =
+    `${matchedCount} matched · ${filtered.length} total`;
+
+  DigestDisplay.renderList({
+    containerId:  "paper-list",
+    paginationId: "paper-pagination",
+    papers:       filtered,
+    page,
+    onPage: pg => { page = pg; render(); scrollTo({ top: 0, behavior: "smooth" }); },
+  });
+}
+
+boot();
+</script>
+</body>
+</html>

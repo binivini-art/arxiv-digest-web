@@ -1,0 +1,4 @@
+sentence-transformers==3.0.1
+keybert>=0.8.0
+numpy>=1.24
+pyyaml>=6.0

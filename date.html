@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>arXiv Digest · Archive</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📄</text></svg>">
+  <link rel="stylesheet" href="static/global.css">
+</head>
+<body>
+
+<!-- Sidebar -->
+<div class="sidebar-overlay" id="overlay" onclick="DigestDisplay.closeSidebar()"></div>
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-header">
+    <span class="sidebar-title">📅 Browse by Date</span>
+    <button class="sidebar-close" onclick="DigestDisplay.closeSidebar()">✕</button>
+  </div>
+  <div class="sidebar-body" id="calendar-body"></div>
+</div>
+
+<!-- Header -->
+<div class="sticky-top">
+  <div class="header-inner">
+    <div class="header-row" style="padding-bottom: 14px;">
+      <a class="back-btn" href="index.html" title="Back to digest">←</a>
+      <button class="hamburger" onclick="DigestDisplay.openSidebar()" title="Browse history">📅</button>
+      <div>
+        <div class="header-label">arXiv Digest · Archive</div>
+        <div class="header-title" id="header-title">Loading…</div>
+      </div>
+      <span class="header-meta" id="meta-count"></span>
+    </div>
+  </div>
+</div>
+
+<div class="filter-bar" id="filter-bar"></div>
+
+<div class="content">
+  <div id="paper-list"></div>
+  <div class="pagination" id="paper-pagination"></div>
+</div>
+
+<script src="static/display.js"></script>
+<script>
+let activeTopics = new Set();
+let page         = 1;
+let allPapers    = [];
+
+async function boot() {
+  const dateStr = window.location.hash.replace("#", "");
+
+  if (!dateStr || !/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) {
+    DigestDisplay.showError("paper-list", "No date specified.",
+      'Click a date from the calendar on the <a href="index.html">digest page</a>.');
+    document.getElementById("header-title").textContent = "Archive";
+    return;
+  }
+
+  const d = new Date(Date.UTC(...dateStr.split("-").map(Number).map((v, i) => i === 1 ? v - 1 : v)));
+  document.getElementById("header-title").textContent =
+    d.toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric", timeZone: "UTC" });
+  document.title = "arXiv Digest · " + dateStr;
+
+  DigestDisplay.showLoading("paper-list");
+
+  let payload;
+  try {
+    const parts = dateStr.split("-");
+    const res = await fetch("data/papers/" + parts[0] + "/" + parts[1] + "/" + parts[2] + ".json");
+    if (!res.ok) throw new Error("HTTP " + res.status);
+    payload = await res.json();
+  } catch (e) {
+    DigestDisplay.showError("paper-list", "No data for " + dateStr + ".",
+      "This date may be outside the 3-month archive, or the digest hasn't run yet. <a href=\"index.html\">← Back</a>");
+    return;
+  }
+
+  allPapers = payload.papers;
+
+  const topicSet = new Set();
+  allPapers.forEach(p => (p.matched_topics || []).forEach(t => topicSet.add(t)));
+  const allTopics = [...topicSet, "misc"];
+  DigestDisplay.buildTopicStyles(allTopics);
+  activeTopics = new Set(allTopics);
+
+  DigestDisplay.buildFilterChips("filter-bar", activeTopics, () => {
+    page = 1; render();
+  });
+
+  // Build calendar from available_dates.json
+  try {
+    const res = await fetch("data/available_dates.json");
+    if (res.ok) {
+      const idx = await res.json();
+      DigestDisplay.buildCalendar(idx.dates, idx.latest,
+        ds => { window.location.href = "date.html#" + ds; });
+    }
+  } catch (_) { /* calendar optional */ }
+
+  render();
+}
+
+function render() {
+  const matched   = allPapers.filter(p => p.matched_topics && p.matched_topics.length > 0);
+  const unmatched = allPapers.filter(p => !p.matched_topics || p.matched_topics.length === 0);
+  const tagged    = unmatched.map(p => ({...p, matched_topics: ["misc"]}));
+  const combined  = [...matched, ...tagged];
+  const filtered  = combined.filter(p =>
+    (p.matched_topics || []).some(t => activeTopics.has(t))
+  );
+
+  const matchedCount = filtered.filter(p => !p.matched_topics.includes("misc")).length;
+  document.getElementById("meta-count").textContent =
+    matchedCount + " matched · " + filtered.length + " total";
+
+  DigestDisplay.renderList({
+    containerId:  "paper-list",
+    paginationId: "paper-pagination",
+    papers:       filtered,
+    page,
+    onPage: pg => { page = pg; render(); scrollTo({ top: 0, behavior: "smooth" }); },
+  });
+}
+
+boot();
+</script>
+</body>
+</html>

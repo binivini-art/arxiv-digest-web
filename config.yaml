@@ -1,0 +1,35 @@
+topics:
+  - name: MRI Foundation Model
+    enabled: true
+    description: "Foundation model of radiology images."
+    
+  - name: Longitudinal brain MRI
+    enabled: true
+    description: "Deep-learning based model for the longitudinal brain MRI."
+
+  - name: Stroke synthesis
+    enabled: true
+    description: "Deep-learning based model for the stroke synthesis from the normal brain MRI images."
+
+  # Add more topics here:
+  # - name: Another Topic
+  #   enabled: true
+  #   description: "Description used for semantic matching"
+
+# arXiv categories to fetch from
+categories:
+  - cs.AI
+  - cs.LG
+  - cs.CL
+
+# Max papers to fetch per run
+max_results: 4000
+
+# Semantic similarity threshold (0.0-1.0, lower = more results)
+embedding_threshold: 0.35
+
+# Set to false to disable digest email notifications
+email_enabled: true
+
+# Optional: included as a link at the bottom of notification emails
+# site_url: "https://yourusername.github.io/arxiv-digest"
