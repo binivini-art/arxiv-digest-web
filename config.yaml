@@ -1,7 +1,15 @@
 topics:
-  - name: Example Topic
+  - name: MRI Foundation Model
     enabled: true
-    description: "Replace this with a plain English description of what you're interested in"
+    description: "Foundation model of radiology images."
+    
+  - name: Longitudinal brain MRI
+    enabled: true
+    description: "Deep-learning based model for the longitudinal brain MRI."
+
+  - name: Stroke synthesis
+    enabled: true
+    description: "Deep-learning based model for the stroke synthesis from the normal brain MRI images."
 
   # Add more topics here:
   # - name: Another Topic
